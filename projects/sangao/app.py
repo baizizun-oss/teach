@@ -84,6 +84,8 @@ if __name__ == '__main__':
         , (r'/sangao/Record/lists', sangao.RecordController.listsHandler)
         , (r'/sangao/Record/detail', sangao.RecordController.detailHandler)
         , (r'/sangao_admin', sangao_admin.IndexController.indexHandler)
+        , (r'/sangao_admin/login', sangao_admin.IndexController.loginHandler)
+        , (r'/sangao_admin/index', sangao_admin.IndexController.indexHandler)
         , (r'/sangao_admin/TeachExam/question_lists', sangao_admin.TeachExamController.questionListsHandler)
         , (r'/sangao_admin/TeachExam/question_detail', sangao_admin.TeachExamController.questionDetailHandler)
         , (r'/sangao_admin/TeachExam/question_add', sangao_admin.TeachExamController.questionAddHandler)

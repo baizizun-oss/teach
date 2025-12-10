@@ -20,12 +20,21 @@ import myportal.common as common
 
 class indexHandler(tornado.web.RequestHandler):
     def get(self):
+        if self.get_cookie("administrator",None) !="admin":
+            self.redirect("sangao_admin/login")
+        else:
+            self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","index.html"))
 
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","index.html"))
-    def on_response(self,response):
-        body= json.loads(response.body)
-        print("response内容为:",body)
-        self.finish
+class loginHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Index","login.html"))
+    def post(self):
+        if self.get_argument("username") == "bgp1984" and self.get_argument("password") == "founder#021665":
+            self.set_cookie("administrator", "admin")
+            self.redirect("index")
+        else:
+            self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Index","login.html"))
+
 
 class clickStatisticsHandler(tornado.web.RequestHandler):
     def get(self):

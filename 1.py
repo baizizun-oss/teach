@@ -23,3 +23,5 @@ while 1:
     else:
         break
 print(f"成绩为：{score}")
+
+print()

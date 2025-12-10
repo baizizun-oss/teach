@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>详细页</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+img{
+	width:100%;
+	}
+</style>
+<table width="100%" border="1">
+{%for vo in note%}
+<tr>
+  <th scope="row">标题</th>
+  <td>{{vo[3]}}</td>
+</tr>
+<tr>
+  <th scope="row">内容</th>
+  <td>{{vo[4]}}</td>
+</tr>
+
+<tr>
+  <th scope="row">图片1</th>
+  <td><img src="{{static_url('warehouse_manager_upload/')+vo[3]}}"></td>
+</tr>
+
+<tr>
+  <th scope="row">图片2</th>
+  <td><img src="{{static_url('warehouse_manager_upload/')+vo[4]}}"></td>
+</tr>
+<tr>
+  <th scope="row">图片3</th>
+  <td><img src="{{static_url('warehouse_manager_upload/')+vo[5]}}"></td>
+</tr>
+<tr>
+  <th scope="row"><a href="/warehouse_manager/Home/Index/doubleDel?id={{vo[0]}}"><button>删除</button></a></th>
+  <td><a href="/warehouse_manager/Home/Index/doubleEdit?id={{vo[0]}}"><button>编辑</button></a></td>
+</tr>
+{%end%}
+</table>
+</body>
+</html>

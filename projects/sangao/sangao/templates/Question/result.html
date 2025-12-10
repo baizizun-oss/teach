@@ -1,0 +1,160 @@
+<!--sangao/templates/Question/result.html-->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>正在练习</title>
+<!-- 添加jQuery -->
+<script src="/static_Question_js/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<form action="handin?module={{module}}&type={{question_type}}" method="post" enctype="multipart/form-data" name="add_form" target="_self">
+  <table width="100%" border="1">
+    <caption style="font-size: 100px;">
+      查找结果
+      <!-- 添加换一批按钮 -->
+      <button type="button" id="changeBatch" style="font-size: 36px; margin-left: 20px;">换一批</button>
+      <span id="loading" style="display:none; font-size: 36px; color: blue;">加载中...</span>
+    </caption>
+    <!-- 题目容器 -->
+    <tbody id="questionsContainer">
+    {%for vo in single_choice_questions%}  
+    <tr>
+      <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"]!= "" %}<img width="500" src="/static_single_choice_question_images/{{vo['picture']}}">{% end %}</th>
+      <td>&nbsp;</td>
+      <td>
+        <p>
+          <input type="radio" name="answer[{{vo['id']}}]" value="A">
+          {{vo["choice1"]}}</p>
+        <p>
+          <input type="radio" name="answer[{{vo['id']}}]" value="B">
+          {{vo["choice2"]}}</p>
+        <p>
+          <input type="radio" name="answer[{{vo['id']}}]" value="C">
+          {{vo["choice3"]}}</p>
+        <p>
+          <input type="radio" name="answer[{{vo['id']}}]" value="D">
+          {{vo["choice4"]}}</p>
+      </td>
+    </tr>
+    {%end%}   
+    {%for vo in true_false_questions%}
+    <tr>
+      <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_single_choice_question_images/{{vo['picture']}}">{% end %}</th>
+      <td>&nbsp;</td>
+      <td>
+      <p><input type="radio" name="answer[{{vo['id']}}]" value="right">对</p>
+      <p><input type="radio" name="answer[{{vo['id']}}]" value="wrong">错</p>
+      </td>
+    </tr>   
+    {%end%} 
+    {%for vo in multiple_choice_questions%}  
+    <tr>
+      <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_multiple_choice_question_images/{{vo['picture']}}">{% end %}</th>
+      <td>&nbsp;</td>
+      <td>
+		    <input type="checkbox" name="answer[{{vo['id']}}]" value="A"><span>A</span>
+		    <input type="checkbox" name="answer[{{vo['id']}}]" value="B"><span>B</span>
+        <input type="checkbox" name="answer[{{vo['id']}}]" value="C"><span>C</span>
+        <input type="checkbox" name="answer[{{vo['id']}}]" value="D"><span>D</span>
+        <input type="checkbox" name="answer[{{vo['id']}}]" value="E"><span>E</span>
+        <input type="checkbox" name="answer[{{vo['id']}}]" value="F"><span>F</span>
+      </td>
+    </tr>
+    {%end%}       
+    {%for vo in fill_blank_questions%}  
+    <tr>
+      <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
+      <th scope="row">{{vo["title"]}}<img width="500" src="{{static_url('sangao/templates/Question/upload/')+vo['picture']}}"></th>
+      <td>&nbsp;</td>
+      <td><input type="text" name="answer[{{vo['id']}}]"></td>
+    </tr>
+    {%end%}             
+    {%for vo in operation_questions%}
+    <tr>
+      <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_operation_question_images/{{vo['picture']}}">{% end %}</th>
+      <td>{% if vo["material"] != "" %}<a href="/static_operation_question_files/{{vo['material']}}">{{vo["material"]}} </a>{% end %}</td>
+      <td><input type="file" name="file"></td>
+    </tr>    
+    {%end%}                      
+    <tr>
+      <th scope="row">&nbsp;</th>
+      <th scope="row">&nbsp;</th>
+      <td>&nbsp;</td>
+      <td><input type="submit" value="提交"></td>
+    </tr>
+    </tbody>
+  </table>
+</form>
+
+<script>
+$(document).ready(function(){
+  $('#changeBatch').click(function(){
+    // 显示加载状态
+    $('#loading').show();
+    $('#changeBatch').prop('disabled', true);
+    
+    // 发送AJAX请求获取新题目
+    $.ajax({
+      url: 'change_batch', // 修正为正确的后端接口地址
+      method: 'GET',
+      data: {
+        module: '{{module}}',
+        type: '{{question_type}}',
+        number:'{{number}}'
+      },
+      success: function(data){
+        // 更新题目内容
+        //alert(data);
+        $('#questionsContainer').html(data);
+      },
+      error: function(xhr, status, error){
+        console.log("Error details:", xhr, status, error);
+        alert('获取新题目失败，请重试。错误信息: ' + error);
+      },
+      complete: function(){
+        // 隐藏加载状态
+        $('#loading').hide();
+        $('#changeBatch').prop('disabled', false);
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>详细页</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+img{
+	width:100%;
+	}
+</style>
+<table width="100%" border="1">
+<tr>
+  <th scope="row">标题</th>
+  <td>{{record['title']}}</td>
+</tr>
+<tr>
+  <th scope="row">内容</th>
+  <td>{{record['processed_content']}}</td>
+</tr>
+<tr>
+  <th scope="row">逻辑主线</th>
+  <td>{{record["logic_chain"]}}</td>
+</tr>
+
+</table>
+</body>
+</html>

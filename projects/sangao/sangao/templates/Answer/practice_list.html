@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>练习作答列表</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<table width="100%" border="1">
+<caption style="font-size: 100px;">我的练习作答记录</caption>
+<tr>
+  <th>作答时间</th>
+  <th>得分</th>
+</tr>
+{%for myanswer in practice_historys%}
+<tr>
+  <th scope="row">{{myanswer["ctime"]}}</th>
+  <td><a href="practice_detail?submission_id={{myanswer['submission_id']}}">{{myanswer["total_score"]}}</a></td>
+</tr>
+{%end%}
+</table>
+</body>
+</html>

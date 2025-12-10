@@ -1,0 +1,291 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+<title>编辑</title>
+</head>
+{% import time %}
+{% import re %}
+
+<body>
+<style>
+tr{
+	height:200px;
+	}
+th{
+	width:20%;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:240px; 
+	height:200px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:100%;
+	}
+input[type="file"]{
+	width:80%;
+	}
+select{
+	width:80%;
+	font-size:48px;
+	}
+img{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<form action="/task/Home/Index/doubleEdit?id={{task[0]}}" method="post" enctype="multipart/form-data" name="edit_form" target="_self">
+<table width="100%" border="1">
+  <tr>
+    <th scope="row">标题({{task[0]}})</th>
+    <td><input type="text" name="title" value="{{title}}"></td>
+  </tr>
+  <tr>
+    <th scope="row">内容</th>
+    <td><textarea name="content" rows="20">{{content}}</textarea></td>
+  </tr>
+  <tr>
+    <th scope="row">状态</th>
+    <td><table>
+      <tr>
+        <td><input type="radio" name="status" value="未完成" {% if status=="未完成" %}checked{% end %}><span>未完成</span></td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="未处理" {% if status == "未处理" %}checked{% end %}><span>未处理</span></td>
+        </tr>        
+      <tr>
+        <td><input type="radio" name="status" value="存疑" {% if status == "存疑" %}checked{% end %}><span>存疑</span></td>
+        </tr>
+      <tr>
+        <td>
+          <select name="challenge">
+            <option value="{{challenge}}" selected>{{challenge}}</option>
+            {%for vo in challenges%}
+            <option value="{{vo[1]}}">{{vo[1]}}({{vo[3]}})</option>
+            {%end%}
+            </select>
+          </td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="遇阻" {% if status == "遇阻" %}checked{% end %}><span>遇阻</span></td>
+        </tr>      
+        <tr>
+        <td>
+          <select name="impede">
+            <option value="{{impede}}" selected>{{impede}}</option>
+            
+            {%for vi in impedes%}
+              <option value="{{vi[1]}}">{{vi[1]}}({{vi[2]}})</option>
+              {%end%}
+            </select>
+          </td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="存在前置问题" 
+          <eq name="status" value="存在前置问题">checked</eq>
+          ><span>存在前置问题</span></td>
+        </tr>
+      <tr>
+        <td><select name="front_problem">
+          <foreach name="front_problem" item="vo">
+            <option value="{$vo['id']}"><span>{$vo["id"]}</span>{$vo["title"]}</option>
+            </foreach>
+          </select></td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="存在前置任务" 
+          <eq name="status" value="存在前置任务">checked</eq>
+          ><span>存在前置任务</span></td>
+        </tr>
+      
+      <tr>
+        <td>
+          <select name="front_task_id">
+            <foreach name="front_task" item="vo">
+              <option value="{$vo['id']}"><span>{$vo["id"]}</span>{$vo["title"]}</option>
+              </foreach>	
+            </select>
+          </td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="验证中" 
+          <eq name="status" value="验证中">checked</eq>
+          ><span>验证中</span></td>
+        </tr>
+      <tr>
+        <td>
+          <select name="validating" id="validating" class="status">
+            <option value="{$selected_validating['validating']}">{$selected_validating["validating"]}</option>
+            <option value="">没有细分</option>
+            <foreach name="validating" item="vo">
+              <option value="{$vo['name']}"><span>{$vo["id"]}</span>{$vo["name"]}</option>
+              </foreach>
+            </select>
+          </td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="已完成" 
+          {%if status=="已完成"%} checked{%end%}
+          ><span>已完成</span></td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="失败" 
+          <eq name="status" value="失败">checked</eq>
+          ><span>失败</span></td>
+        </tr>
+      <tr>
+        <td><input type="radio" name="status" value="已否定" 
+          <eq name="status" value="已否定">checked</eq>
+          ><span>已否定</span></td>
+        </tr>        
+      </table></td>
+  </tr>
+  <tr>
+    <th scope="row">地点</th>
+    <td>
+      <input type="checkbox" name="address[]" value="广场家" {% if re.search('广场家',address) != None %} checked {% end %}><span>广场家</span>
+      <input type="checkbox" name="address[]" value="新一高家" {% if re.search('新一高家',address) != None %} checked {% end %}><span>新一高家</span>
+      <input type="checkbox" name="address[]" value="三高" {% if re.search('三高',address) != None %} checked {% end %}><span>三高</span>
+      </td>
+  </tr>
+
+  <tr>
+    <th scope="row">类型</th>
+    <td>
+      <input type="checkbox" name="type[]" value="IT" {% if 'IT' in type.split(',') %} checked {% end %}><span>IT</span>
+      <input type="checkbox" name="type[]" value="生活" <?php if(in_array("生活",$type)) echo "checked"; ?>><span>生活</span>
+      <input type="checkbox" name="type[]" value="任务" <?php if(in_array("任务",$type)) echo "checked"; ?>><span>任务</span>
+      <input type="checkbox" name="type[]" value="心得" <?php if(in_array("心得",$type)) echo "checked"; ?>><span>心得</span>
+      </td>
+  </tr>
+  <tr>
+    <th scope="row">图片1</th>
+    <td><img src="__ROOT__/{$photo1}">
+      <input type="file" name="photo1" class="photo"></td>
+  </tr>
+  <tr>
+    <th scope="row">图片2</th>
+    <td><img src="__ROOT__/{$photo2}">
+      <input type="file" name="photo2" class="photo"></td>
+  </tr>
+  <tr>
+    <th scope="row">图片3</th>
+    <td><img src="__ROOT__/{photo3}">
+      <input type="file" name="photo3" class="photo"></td>
+  </tr>
+  <tr>
+    <th scope="row">开始显示时间</th>
+    <td><select name="start_display_time_year">
+      <option value="{{time.strftime('%Y')}}">{{time.strftime("%Y") }}</option>
+      <option value="{{int(time.strftime('%Y'))+1}}">{{int(time.strftime("%Y"))+1 }}</option>
+    </select>
+      <span>年</span>
+      <select name="start_display_time_month">
+        <option value="{{time.strftime('%m')}}" selected>{{time.strftime("%m") }}</option>
+        <option value="01">01</option>
+        <option value="02">02</option>
+        <option value="03">03</option>
+        <option value="04">04</option>
+        <option value="05">05</option>
+        <option value="06">06</option>
+        <option value="07">07</option>
+        <option value="08">08</option>
+        <option value="09">09</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+        <option value="12">12</option>
+      </select>
+      <span>月</span>
+      <select name="start_display_time_first_half">
+        <option value="{{time.strftime('%d')}}" selected>{{time.strftime('%d')}}</option>
+        <option value="01">01</option>
+        <option value="02">02</option>
+        <option value="03">03</option>
+        <option value="04">04</option>
+        <option value="05">05</option>
+        <option value="06">06</option>
+        <option value="07">07</option>
+        <option value="08">08</option>
+        <option value="09">09</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+        <option value="12">12</option>
+        <option value="13">13</option>
+        <option value="14">14</option>
+        <option value="15">15</option>
+      </select>
+      <span>上半月</span>
+      <select name="start_display_time_second_half">
+        <option value="{{time.strftime('%d')}}" selected>{{time.strftime('%d')}}</option>
+        <option value="16">16</option>
+        <option value="17">17</option>
+        <option value="18">18</option>
+        <option value="19">19</option>
+        <option value="20">20</option>
+        <option value="21">21</option>
+        <option value="22">22</option>
+        <option value="23">23</option>
+        <option value="24">24</option>
+        <option value="25">25</option>
+        <option value="26">26</option>
+        <option value="27">27</option>
+        <option value="28">28</option>
+        <option value="29">29</option>
+        <option value="30">30</option>
+        <option value="31">31</option>
+      </select>
+      <span>下半月</span>
+      <select name="start_display_time_morning">
+        <option value="{{time.strftime('%H')}}" selected>{{time.strftime('%H')}}</option>
+        <option value="00">00</option>
+        <option value="01">01</option>
+        <option value="02">02</option>
+        <option value="03">03</option>
+        <option value="04">04</option>
+        <option value="05">05</option>
+        <option value="06">06</option>
+        <option value="07">07</option>
+        <option value="08">08</option>
+        <option value="09">09</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+      </select>
+      <span>上午</span>
+      <select name="start_display_time_afternoon">
+        <option value="{{time.strftime('%H')}}" selected>{{time.strftime('%H')}}</option>
+        <option value="12">12</option>
+        <option value="13">13</option>
+        <option value="14">14</option>
+        <option value="15">15</option>
+        <option value="16">16</option>
+        <option value="17">17</option>
+        <option value="18">18</option>
+        <option value="19">19</option>
+        <option value="20">20</option>
+        <option value="21">21</option>
+        <option value="22">22</option>
+        <option value="23">23</option>
+      </select>
+      <span>下午</span></td>
+  </tr>
+  <tr>
+    <th scope="row"></th>
+    <td><input type="submit" name="submit" value="提交" /></td>
+  </tr>
+</table>
+
+</form>
+</body>
+</html>

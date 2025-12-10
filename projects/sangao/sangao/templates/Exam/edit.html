@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>组卷试题</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<form action="handin?exam_paper_id={{exam_paper_id}}&user_id={{user_id}}" method="post" enctype="multipart/form-data" name="add_form" target="_self">
+  <table width="100%" border="1">
+    <caption style="font-size: 100px;">考试中</caption>
+    {% if len(single_choice_questions)>0 %}
+      {%for vo in single_choice_questions%}  
+    <tr>
+      <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="single_choice_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="single_choice"></th>
+      <th scope="row">{{vo["title"]}}<img width="500" src="/static_single_choice_question_images/{{vo['picture']}}"></th>
+      <td>&nbsp;</td>
+      <td>
+        <p>
+          <input type="radio" name="single_choice_answer[{{vo['question_id']}}]" value="A">
+          {{vo["choice1"]}}</p>
+        <p>
+          <input type="radio" name="single_choice_answer[{{vo['question_id']}}]" value="B">
+          {{vo["choice2"]}}</p>
+        <p>
+          <input type="radio" name="single_choice_answer[{{vo['question_id']}}]" value="C">
+          {{vo["choice3"]}}</p>
+        <p>
+          <input type="radio" name="single_choice_answer[{{vo['question_id']}}]" value="D">
+          {{vo["choice4"]}}</p>
+      </td>
+    </tr>
+      {%end%}   
+    {% end %}
+    {%for vo in true_false_questions%}
+    <tr>
+      <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="tf_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="true_false"></th>
+      <th scope="row">{{vo["title"]}}<img width="500" src="{{static_url('sangao/templates/Exam/upload/')+vo['picture']}}" alt=""></th>
+      <td>&nbsp;</td>
+      <td>
+      <p><input type="radio" name="tf_answer[{{vo['question_id']}}]" value="right">对</p>
+      <p><input type="radio" name="tf_answer[{{vo['question_id']}}]" value="wrong">错</p>
+      </td> 
+    </tr>   
+    {%end%} 
+    {%for vo in multiple_choice_questions%}  
+    <tr>
+      <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="multiple_choice_question_id" value="{{vo['id']}}"><input hidden="" type="text" name="question_type" value="multiple_choice"></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_multiple_choice_question_images/{{vo['picture']}}">{% end %}</th>
+      <td>&nbsp;</td>
+      <td>
+		    <p><input type="checkbox" name="multiple_choice_answer[{{vo['id']}}]" value="A"><span>A</span><span>{{vo["choice1"]}}</span></p>
+		    <p><input type="checkbox" name="multiple_choice_answer[{{vo['id']}}]" value="B"><span>B</span><span>{{vo["choice2"]}}</span></p>
+        <p><input type="checkbox" name="multiple_choice_answer[{{vo['id']}}]" value="C"><span>C</span><span>{{vo["choice3"]}}</span></p>
+        <p><input type="checkbox" name="multiple_choice_answer[{{vo['id']}}]" value="D"><span>D</span><span>{{vo["choice4"]}}</span></p>
+        <p><input type="checkbox" name="multiple_choice_answer[{{vo['id']}}]" value="E"><span>E</span><span>{{vo["choice5"]}}</span></p>
+        <p><input type="checkbox" name="multiple_choice_answer[{{vo['id']}}]" value="F"><span>F</span><span>{{vo["choice6"]}}</span></p>
+      </td>
+    </tr>
+    {%end%}       
+    {%for vo in fill_blank_questions%}
+    <tr>
+      <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="fill_blank_question_id" value="{{vo['id']}}"><input hidden="" type="text" name="question_type" value="fill_blank"></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_fill_blank_question_images/{{vo['picture']}}">{% end %}</th>
+      <td colspan="2"><input type="text" name="fill_blank_answer[{{vo['id']}}]"></td>
+    </tr>    
+    {%end%}           
+    {%for vo in operation_questions%}
+    <tr>
+      <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="operation_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="operation"></th>
+      <th scope="row">{{vo["title"]}}<img width="500" src="{{static_url('sangao/templates/Question/upload/')+vo['picture']}}" alt=""></th>
+      <td>{% if vo["material"] != "" %} <span>文件1</span><a href="/static_operation_question_files/{{vo['material']}}">{{vo["material"]}}</a>{% end %}
+        {% if vo["material2"] != "" %}<span>文件2</span><a href="/static_operation_question_files/{{vo['material2']}}">{{vo["material2"]}}</a>{% end %}</td>
+      <td><input type="file" name="file_{{vo['question_id']}}"></td>
+    </tr>    
+    {%end%}                      
+    <tr>
+      <th scope="row">&nbsp;</th>
+      <th scope="row">&nbsp;</th>
+      <td>&nbsp;</td>
+      <td><input type="submit" value="提交"></td>
+    </tr>
+
+  </table>
+</form>
+</body>
+</html>

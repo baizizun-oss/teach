@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+<title>社团作品展示</title>
+</head>
+
+<body>
+<style>
+button{
+	width:100px;
+	height:80px;
+	font-size:10px;
+	}
+</style>
+
+<a href="add"><button>增加</button></a>
+
+
+<table width="100%" border="1" align="center">
+<caption style="font-size:50px;">社团作品展示</caption>
+  <tr>
+    <th scope="col">序号</th>
+    <th scope="col">作者</th>
+    <th scope="col">作品说明</th>
+    <th scope="col">作品文件</th>
+    <th scope="col">评价</th>
+  </tr>
+  {%for vo in student_works%}
+  <tr>
+    <th scope="col">{{vo["id"]}}</th>
+    <th scope="col">{{vo["student_name"]}}</th>
+    <th scope="col">
+    <video controls width="200">
+    <source src="{{static_url('sangao/templates/StudentWorks/upload/')+vo['works_introduction_video']}}" type="video/mp4" />
+Your browser does not support the video tag.
+	</video>
+    <p>{{vo["works_introduction_text"]}}</p>
+    </th>
+    <td><a href="{{static_url('sangao/templates/StudentWorks/upload/')+vo['works_file']}}">{{vo["works_name"]}}</a></td>
+    <th scope="col">
+    <table width="100%" border="1" align="center">
+      {%for key in vo["comment"]%}
+      <tr>
+        <th scope="col">{{key["student_name"]}}</th>
+        <th scope="col">{{key["comment"]}}</th>
+      </tr>
+      {%end%}
+    </table>
+    <a href="comment?works_id={{vo['id']}}"><button>我要点评</button></a>
+</th>
+  </tr>
+  {%end%}
+</table>
+
+</body>
+</html>
+{% import time %}
+{% import sqlite3 %}
+{% set endtime = time.time() %}
+{% set spend = endtime - starttime %}
+{% set conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db")) %}
+{% set sql = "insert into click(click_time,click_action,user_id,spend) values(" + str(int(time.time())) + ",'studentWorks_list','"+user_id+"',"+str(spend)+")" %}
+{% raw conn.cursor().execute(sql) %}
+{% raw conn.commit() %}
+{% raw conn.close() %}

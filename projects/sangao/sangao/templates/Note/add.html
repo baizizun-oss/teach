@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>开发版新增任务</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<form action="add" method="post" enctype="multipart/form-data" name="add_form" target="_self">
+  <table width="100%" border="1">
+    <tr>
+      <th scope="row">标题</th>
+      <td><input type="text" name="title"></td>
+    </tr>
+    <tr>
+      <th scope="row">目的</th>
+      <td><p>提高效率</p>
+        <p>扩大自由度</p>
+        <p>扩大适用范围</p>
+        <p>it类型的任务可以获得新知识</p>
+        <p>降低成本</p>
+        <p>格物致知，发现并明白内在原理或运行规律</p>
+        <p>有收益</p></td>
+    </tr>
+    <tr>
+      <th scope="row">是否为《任务笔记系统开发版》自身变动任务</th>
+      <td><input type="radio" name="is_task_develop" value="yes">
+        <span>是</span>
+        <input type="radio" name="is_task_develop" value="no">
+        <span>否</span></td>
+    </tr>
+    <tr>
+      <th scope="row">优先级选择</th>
+      <td>
+      <input type="radio" name="priority" value="$^"><span>$^</span>
+      <input type="radio" name="priority" value="&^"><span>&amp;^</span>
+      <input type="radio" name="priority" value="￥^"><span>￥^</span>
+      <input type="radio" name="priority" value="£^"><span>£^</span>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">内容</th>
+      <td><textarea name="content" rows="20"></textarea></td>
+    </tr>    
+    <tr>
+      <th scope="row">地点</th>
+      <td>
+      <input type="checkbox" name="address[]" value="广场家"><span>广场家</span>
+      <input type="checkbox" name="address[]" value="新一高家"><span>新一高家</span>
+      <input type="checkbox" name="address[]" value="一店"><span>一店</span>
+      <input type="checkbox" name="address[]" value="三高"><span>三高</span>
+      <input type="checkbox" name="address[]" value="三高公寓"><span>三高公寓</span>
+      <input type="checkbox" name="address[]" value="三高办公室"><span>三高办公室</span>      
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">类型</th>
+      	<td>
+        <input type="checkbox" name="type[]" value="IT"><span>IT</span>
+        <input type="checkbox" name="type[]" value="生活"><span>生活</span>
+      	<input type="checkbox" name="type[]" value="任务"><span>任务</span>
+      	<input type="checkbox" name="type[]" value="心得"><span>心得</span>
+		</td>
+    </tr>
+    <tr>
+      <th scope="row">图片1</th>
+      <td><input type="file" name="photo1" class="photo"></td>
+    </tr>
+    <tr>
+      <th scope="row">图片2</th>
+      <td><input type="file" name="photo2" class="photo"></td>
+    </tr>
+    <tr>
+      <th scope="row">图片3</th>
+      <td><input type="file" name="photo3" class="photo"></td>
+    </tr>
+    <tr>
+      <th scope="row">&nbsp;</th>
+      <td><input type="submit" value="提交"></td>
+    </tr>
+  </table>
+</form>
+</body>
+</html>

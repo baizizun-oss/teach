@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+<title>详细页</title>
+<!-- 引入本地 marked -->
+<script src="/static_js/marked.min.js"></script>
+
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+/* 响应式图片：最大高度100px，宽度自适应但不超过容器 */
+.responsive-img {
+  max-height: 1000px;
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  object-fit: contain; /* 保持比例 */
+  display: block;
+}
+</style>
+<table width="100%" border="1">
+<caption>教师资格证面试试讲题目</caption>
+<tr>
+  <th scope="row">题目</th>
+  <td>{{teach['title']}}</td>
+</tr>
+<tr>
+  <th scope="row">逻辑链条</th>
+  <td>{{teach['my_logic']}}</td>
+</tr>
+<tr>
+  <th scope="row">我的文稿</th>
+  <td>{{teach["my_answer"]}}</td>
+</tr>
+<tr>
+  <th scope="row">教学设计</th>
+  <td><div id="design-rendered" class="design-container"></div></td>
+</tr>
+<tr>
+  <th scope="row">教学设计图片</th>
+  <td><img src="/board_pic/{{teach['design_pic']}}" class="responsive-img"></td>
+</tr>
+<tr>
+  <th scope="row">板书设计</th>
+  <td><div id="board-rendered" class="board-container"></div></td>
+</tr>
+<tr>
+  <th scope="row">板书图片</th>
+  <td><img src="/board_pic/{{teach['board_pic']}}" class="responsive-img"></td>
+</tr>
+<tr>
+  <th scope="row">反思</th>
+  <td>{{teach["reflection"]}}</td>
+</tr>
+<tr>
+  <th scope="row">操作</th>
+  <td><a href="teach_edit?id={{teach['id']}}"><button>编辑</button></a></td>
+</tr>
+</table>
+
+<!-- 把数据放在 script 标签内，类型为 JSON -->
+<script id="board-data" type="application/json">
+{% raw board_design %}
+</script>
+
+<script>
+// 从 script 标签读取，完全绕过 JS 字符串解析
+const boardDataEl = document.getElementById('board-data');
+const markdownContent = JSON.parse(boardDataEl.textContent);
+const htmlContent = marked.parse(markdownContent || '');
+document.getElementById('board-rendered').innerHTML = htmlContent;
+</script>
+<script id="design-data" type="application/json">
+{% raw design %}
+</script>
+
+<script>
+// 从 script 标签读取，完全绕过 JS 字符串解析
+const designDataEl = document.getElementById('design-data');
+const designMarkdownContent = JSON.parse(designDataEl.textContent);
+const designHtmlContent = marked.parse(designMarkdownContent || '');
+document.getElementById('design-rendered').innerHTML = designHtmlContent;
+</script>
+</body>
+</html>

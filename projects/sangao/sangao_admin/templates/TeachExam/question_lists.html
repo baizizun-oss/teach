@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>结构化问答列表</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<table width="100%">
+    <tr>
+        <td align="center"><a href="question_add"><button>增加问答</button></a></td>
+    </tr>
+</table>
+<table width="100%" border="1">
+<caption style="font-size: 100px;">问题列表</caption>
+<tr>
+  <th>id</th>
+  <th>题目</th>
+  <th>打分</th>
+</tr>
+{%for record in records%}
+<tr>
+  <td>{{record["id"]}}</td>
+  <td><a href="question_detail?id={{record['id']}}">{{record["question"]}}</a></td>
+  <td>{{record["score"]}}</td>
+</tr>
+{%end%}
+</table>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+<title>试题查询</title>
+</head>
+
+<body>
+<script src="/static_Question_js/jquery-3.7.1.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('#module').change(function() {
+    const module = $(this).val();
+    const $kpSelect = $('#knowledge');
+
+    if (module) {
+      // 清空并禁用，显示加载状态
+      $kpSelect.empty().prop('disabled', true).append('<option>加载中...</option>');
+
+      $.get('/sangao/Question/get_module_knowledge', { module: module })
+        .done(function(data) {
+          // data 应为 [{id: 1, name: "函数"}, {id: 2, name: "导数"}, ...]
+          $kpSelect.empty().prop('disabled', false);
+          $kpSelect.append('<option value="所有">所有</option>');
+          $kpSelect.append('<option value="12">暂未纳入</option>');
+          data.forEach(item => {
+            $kpSelect.append(`<option value="${item.id}">${item.name}</option>`);
+          });
+        })
+        .fail(function() {
+          $kpSelect.empty().prop('disabled', true).append('<option>加载失败</option>');
+        });
+    } else {
+      $kpSelect.empty().prop('disabled', true).append('<option>请先选择模块</option>');
+    }
+  });
+});
+</script>  
+<style type="text/css">
+
+th {
+	height:200px;}
+span{
+	font-size:35px;
+	}
+input{
+	width:70px;
+	height:70px;
+	font-size:36px;	
+	}
+input[type="text"]{
+	width:250px;
+	}
+input[type="submit"]{
+	width:250px;
+	height:300px;
+	}
+select{
+	width:100%;
+	}
+tr{
+	height:200px;
+	font-size:48px;
+	}
+th{
+	width:20%;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+
+input[type="submit"]{
+	width:240px; 
+	height:300px; 
+	font-size:36px;
+	}
+
+</style>
+
+<form action="select" method="post" enctype="multipart/form-data" name="select_form" target="_self">
+<table width="100%" border="1">
+  <tr>
+    <th>关键词</th>
+    <td><input type="text" name="keyword"></td>
+  </tr>
+  <tr>
+    <th>题型</th>
+    <td>
+      <select name="type">
+        <option value="single_choice">单选</option>
+        <option value="multiple_choice">多选</option>
+        <option value="true_false">判断</option>
+        <option value="operation">操作</option>
+        <option value="fill_blank">填空</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th>模块</th>
+    <td>
+        <select name="module" id="module">
+          <option value="所有">所有</option>
+          {%for module in modules%}            
+          <option value="{{module['id']}}">{{module["name"]}}</option>
+          {%end%}
+        </select>
+    </td>
+  </tr>
+  <tr>
+    <th>知识点</th>
+    <td>
+        <select name="knowledge" id="knowledge">
+          <option value="所有">所有</option>
+        </select>
+    </td>
+  </tr>  
+  <tr>
+    <th>难度</th>
+    <td>
+      <select name="difficult">
+        <option value="简单">简单</option>
+        <option value="困难">困难</option>
+      </select>
+    </td>
+  </tr>  
+  <tr>
+    <th scope="row">&nbsp;</th>
+    <td><input type="submit" value="提交"></td>
+  </tr>
+</table>
+
+</form>
+</body>
+</html>

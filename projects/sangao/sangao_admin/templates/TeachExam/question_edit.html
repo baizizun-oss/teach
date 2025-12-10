@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>编辑</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<form action="question_edit?id={{question['id']}}" method="post" enctype="multipart/form-data" name="add_form" target="_self">
+  <table width="100%" border="1">
+    <tr>
+      <th scope="row">问题</th>
+      <td><input type="text" name="title" value="{{question['question']}}"></td>
+    </tr>
+    <tr>
+      <th scope="row">我的答案</th>
+      <td><textarea name="my_answer" rows="20">{{question["my_answer"]}}</textarea></td>
+    </tr>
+    <tr>
+      <th scope="row">逻辑</th>
+      <td><input type="text" name="my_logic" value="{{question['my_logic']}}"></td>
+    </tr>			
+    <tr>
+      <th scope="row">反思</th>
+      <td><textarea name="reflection" rows="20">{{question["reflection"]}}</textarea></td>
+    </tr>				
+    <tr>
+      <th scope="row">打分</th>
+      <td><input type="text" name="score" value="{{question['score']}}"></td>
+    </tr>				    
+    <tr>
+      <th scope="row">&nbsp;</th>
+      <td><input type="submit" value="提交"></td>
+    </tr>
+  </table>
+</form>
+</body>
+</html>

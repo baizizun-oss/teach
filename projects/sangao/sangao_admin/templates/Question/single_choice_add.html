@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>添加单选试题</title>
+</head>
+
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('#module').change(function() {
+    const module = $(this).val();
+    const $kpSelect = $('#knowledge');
+
+    if (module) {
+      // 清空并禁用，显示加载状态
+      $kpSelect.empty().prop('disabled', true).append('<option>加载中...</option>');
+
+      $.get('/sangao/Question/get_module_knowledge', { module: module })
+        .done(function(data) {
+          // data 应为 [{id: 1, name: "函数"}, {id: 2, name: "导数"}, ...]
+          $kpSelect.empty().prop('disabled', false);
+          $kpSelect.append('<option value="12">暂未纳入</option>');
+          data.forEach(item => {
+            $kpSelect.append(`<option value="${item.id}">${item.name}</option>`);
+          });
+        })
+        .fail(function() {
+          $kpSelect.empty().prop('disabled', true).append('<option>加载失败</option>');
+        });
+    } else {
+      $kpSelect.empty().prop('disabled', true).append('<option>请先选择模块</option>');
+    }
+  });
+});
+</script>      
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<form action="single_choice_add" method="post" enctype="multipart/form-data" name="add_form" target="_self">
+  <table width="100%" border="1">
+    <tr>
+      <th scope="row">标题</th>
+      <td><input type="text" name="title"></td>
+    </tr>
+    <tr>
+      <th>选项1</th>
+      <td><input type="text" name="choice1"></td>
+    </tr>
+    <tr>
+      <th>选项2</th>
+      <td><input type="text" name="choice2"></td>
+    </tr>
+    <tr>
+      <th>选项3</th>
+      <td><input type="text" name="choice3"></td>
+    </tr>
+    <tr>
+      <th>选项4</th>
+      <td><input type="text" name="choice4"></td>
+    </tr>
+    <tr>
+      <th scope="row">图片1</th>
+      <td><input type="file" name="photo1" class="photo"></td>
+    </tr>
+    <tr>
+      <th>所属模块</th>
+      <td>
+        <select name="module" id="module">
+          {%for module in modules%}            
+          <option value="{{module['id']}}">{{module["name"]}}</option>
+          {%end%}               
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <th>知识点</th>
+      <td>
+        <select name="knowledge" id="knowledge">
+
+        </select>
+      </td>
+    </tr>    
+    <tr>
+      <th scope="row">难度</th>
+      <td>
+      <select name="difficult">
+      <option value="简单">简单</option>
+      <option value="困难">困难</option>
+      </select></td>
+    </tr>    
+    <tr>
+      <th scope="row">标准答案</th>
+      <td>
+      <select name="correct_answer">
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="D">D</option>
+      </select></td>
+    </tr>
+    <tr>
+      <th scope="row">年份</th>
+      <td>
+        <select name="exam_year">
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024" selected>2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>          
+        </select>
+      </td>
+    </tr>   
+    <tr>
+      <th>来源</th>
+      <td>
+        <select name="source">
+          <option value="卓凡题库">卓凡题库</option>
+          <option value="模考">模考</option>
+          <option value="真题">真题</option>
+        </select>
+      </td>
+    </tr>    
+    <tr>
+      <th scope="row">&nbsp;</th>
+      <td><input type="submit" value="提交"></td>
+    </tr>
+  </table>
+</form>
+</body>
+</html>

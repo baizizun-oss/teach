@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>试讲列表</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<table width="100%">
+    <tr>
+        <td align="center"><a href="teach_add"><button>增加试讲</button></a></td>
+    </tr>
+</table>
+<table width="100%" border="1">
+<caption style="font-size: 100px;">试讲列表</caption>
+<tr>
+  <th>id</th>
+  <th>题目</th>
+</tr>
+{%for teach in teaches%}
+<tr>
+  <td>{{teach["id"]}}</td>
+  <td><a href="teach_detail?id={{teach['id']}}">{{teach["title"]}}</a></td>
+</tr>
+{%end%}
+</table>
+</body>
+</html>

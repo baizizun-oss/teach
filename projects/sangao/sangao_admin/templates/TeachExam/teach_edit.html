@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>编辑</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+<form action="teach_edit?id={{teach['id']}}" method="post" enctype="multipart/form-data" name="add_form" target="_self">
+  <table width="100%" border="1">
+    <tr>
+      <th scope="row">问题</th>
+      <td><input type="text" name="title" value="{{teach['title']}}"></td>
+    </tr>
+    <tr>
+      <th scope="row">我的答案</th>
+      <td><textarea name="my_answer" rows="20">{{teach["my_answer"]}}</textarea></td>
+    </tr>
+    <tr>
+      <th scope="row">逻辑</th>
+      <td><input type="text" name="my_logic" value="{{teach['my_logic']}}"></td>
+    </tr>			
+    <tr>
+      <th scope="row">教学设计</th>
+      <td><textarea name="design" rows="20">{{teach["design"]}}</textarea></td>
+    </tr>		    
+    <tr>
+      <th scope="row">教学设计图片</th>
+      <td><input type="file" name="design_pic">{%if teach['design_pic']%}<img src="/board_pic/{{teach['design_pic']}}">{%end%}</td>
+    </tr>		     
+    <tr>
+      <th scope="row">板书</th>
+      <td><textarea name="my_board" rows="20">{{teach["board_design"]}}</textarea></td>
+    </tr>			   
+    <tr>
+      <th scope="row">板书图片</th>
+      <td><input type="file" name="board_pic">{%if teach['board_pic']%}<img src="/board_pic/{{teach['board_pic']}}">{%end%}</td>
+    </tr>		     
+    <tr>
+      <th scope="row">反思</th>
+      <td><textarea name="reflection" rows="20">{{teach["reflection"]}}</textarea></td>
+    </tr>				
+    <tr>
+      <th scope="row">&nbsp;</th>
+      <td><input type="submit" value="提交"></td>
+    </tr>
+  </table>
+</form>
+</body>
+</html>

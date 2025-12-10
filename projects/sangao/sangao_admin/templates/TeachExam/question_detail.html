@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>详细页</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+img{
+	width:100%;
+	}
+</style>
+<table width="100%" border="1">
+  <caption>教师资格证面试结构化问答环节试题</caption>
+<tr>
+  <th scope="row">问题</th>
+  <td>{{question['question']}}</td>
+</tr>
+<tr>
+  <th scope="row">逻辑思路</th>
+  <td>{{question['my_logic']}}</td>
+</tr>
+<tr>
+  <th scope="row">我的答案</th>
+  <td>{{question["my_answer"]}}</td>
+</tr>
+<tr>
+  <th scope="row">反思</th>
+  <td>{{question["reflection"]}}</td>
+</tr>
+<tr>
+  <th scope="row">操作</th>
+  <td><a href="question_edit?id={{question['id']}}"><button>编辑</button></a></td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,16 @@
+services:
+  app:
+    image: sangao:1.0
+    build:
+      context: .
+      pull: false        # 👈 关键！禁止构建时拉取或检查基础镜像    
+    volumes:
+      - ./:/projects/sangao/
+      - /var/run/docker.sock:/var/run/docker.sock  # 关键挂载
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    privileged: true  # 授予特权      
+    ports:
+      - "80:80"
+    restart: unless-stopped
+

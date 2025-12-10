@@ -39,7 +39,7 @@ textarea{
 	width:100%;
 	}	
 </style>
-<form action="handin?module={{module}}&type={{question_type}}" method="post" enctype="multipart/form-data" name="add_form" target="_self">
+<form action="/sangao/Answer/practice_add?module={{module}}&type={{question_type}}" method="post" enctype="multipart/form-data" name="add_form" target="_self">
   <table width="100%" border="1">
     <caption style="font-size: 100px;">
       查找结果
@@ -109,7 +109,7 @@ textarea{
       <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
       <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_operation_question_images/{{vo['picture']}}">{% end %}</th>
       <td>{% if vo["material"] != "" %}<a href="/static_operation_question_files/{{vo['material']}}">{{vo["material"]}} </a>{% end %}</td>
-      <td><input type="file" name="file"></td>
+      <td><input type="file" name="file_{{vo['id']}}"></td>
     </tr>    
     {%end%}                      
     <tr>

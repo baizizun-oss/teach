@@ -75,6 +75,7 @@ if __name__ == '__main__':
         , (r'/sangao/Question/get_module_knowledge', sangao.QuestionController.getModuleKnowledge)
         , (r'/sangao/Question/change_batch', sangao.QuestionController.changeBatchHandler) 
         , (r'/sangao/Answer/practice_list', sangao.AnswerController.practiceListHandler)
+        , (r'/sangao/Answer/practice_add', sangao.AnswerController.practiceAddHandler)
         , (r'/sangao/Answer/history', sangao.AnswerController.HistoryHandler)
         , (r'/sangao/Answer/exam_list', sangao.AnswerController.examListHandler)      
         , (r'/sangao/Answer/list', sangao.AnswerController.listHandler)    

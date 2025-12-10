@@ -478,7 +478,7 @@ class selectHandler(tornado.web.RequestHandler):
         fill_blank_questions={}
         if self.get_argument("type")=="single_choice":
             if data["module"] == "all":
-                sql = "select * from single_choice_question where difficult='" + data["difficult"] + "' limit "+data["number"]
+                sql = "select * from single_choice_question where difficult='" + data["difficult"] + "' order by random() limit "+data["number"]
             else:
                 sql = "select * from single_choice_question where module='" + data["module"] + "' and difficult='" + data["difficult"] + "' order by random() limit "+data["number"]            
             if data["knowledge"]!="所有":
@@ -494,11 +494,10 @@ class selectHandler(tornado.web.RequestHandler):
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"  
             true_false_questions=common.select("sangao",sql)
         if self.get_argument("type")=="operation":
-            sql="select * from operation_question where module='"+data["module"]+"'"
-            if data["module"]=="all":
-                sql="select * from operation_question"
-            else:
-                sql="select * from operation_question where module='"+data["module"]+"'"
+            sql="select * from operation_question where difficult='"+data["difficult"]+"'"
+            if data["module"]!="all":
+                sql=sql+"and module='"+data["module"]+"'"
+            sql=sql+" order by random() limit "+data["number"]
             operation_questions=common.select("sangao",sql) 
         if self.get_argument("type")=="multiple_choice":
             if data["module"]=="all":

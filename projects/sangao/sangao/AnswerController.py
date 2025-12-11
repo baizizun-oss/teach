@@ -8,10 +8,13 @@ import logging
 import os
 import uuid
 import re
+import subprocess
+from config import LOCAL_MOUNT_POINT
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = "your_database_path.db"  # 请替换为实际数据库路径，或从 config 引入
+DB_PATH = "sangao.db"  # 请替换为实际数据库路径，或从 config 引入
+
 
 
 def get_db():
@@ -31,6 +34,16 @@ def normalize_code(code_str):
         lines.append(line)
     no_comment = '\n'.join(lines)
     return re.sub(r'\s+', '', no_comment)
+
+def is_nfs_mounted(mount_point):
+    """检查NFS是否已经挂载"""
+    try:
+        with open("/proc/mounts", "r") as f:
+            mounts = f.read()
+            return mount_point in mounts
+    except Exception:
+        return False
+
 
 
 
@@ -81,29 +94,57 @@ class practiceAddHandler(tornado.web.RequestHandler):
                     return
                 answer_records.append((int(qid), "fill_blank", ans))
         elif question_type == "operation":
-            upload_dir = os.path.join(common.BASE_DIR, "sangao", "templates", "Question", "upload")
-            os.makedirs(upload_dir, exist_ok=True)
+            # # 确保NFS挂载点存在且已挂载
+            # nfs_mount_point = "/home/bgp1984/projects/server_181/projects/sangao/sangao/templates/Answer/upload"
+            # if not ensure_nfs_mount():
+            #     self.write("系统错误：无法挂载文件存储目录")
+            #     return
+            
             for qid in qids:
                 files = self.request.files.get(f"file_{qid}", [])
                 if not files:
                     self.write(f"操作题 {qid} 未上传文件")
                     return
+                
+                # 生成唯一文件名
                 filename = str(uuid.uuid4()) + os.path.splitext(files[0]['filename'])[1]
-                file_path = os.path.join(upload_dir, filename)
+                file_path = os.path.join(LOCAL_MOUNT_POINT, filename)
+                logger.info(f"file_path: {file_path}")
+                # 先将文件保存到NFS
                 with open(file_path, 'wb') as f:
                     f.write(files[0]['body'])
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        student_code = f.read()
-                except Exception as e:
-                    logger.error(f"读取操作题文件失败 {file_path}: {e}")
-                    student_code = ""
-                answer_records.append((int(qid), "operation", student_code))
+                
+                # 将文件信息添加到答案记录中（注意：这里只保存文件名，不保存文件内容）
+                answer_records.append((int(qid), "operation", filename))
         else:
             self.write("不支持的题型")
             return
 
-        # 评分并保存
+        # 先保存到数据库
+        saved_records = []  # 用于跟踪已保存的记录
+        for qid, qtype, student_ans in answer_records:
+            # 对于操作题，student_ans实际上是文件名
+            common.execute("sangao", """
+                INSERT INTO student_answer(
+                    student_id, question_id, user_answer, ctime, question_type, 
+                    score, exam_paper_id, submission_id, source, is_correct
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                student_id,
+                qid,
+                student_ans,  # 对于操作题，这里保存的是文件名
+                int(time.time()),
+                qtype,
+                0,  # 初始分数为0，评分后再更新
+                None,
+                submission_id,
+                'practice',
+                0  # 初始为未评分
+            ))
+            saved_records.append((qid, qtype, student_ans))
+
+        # 然后进行评分处理
+        total_score = 0
         for qid, qtype, student_ans in answer_records:
             correct_ans = self.get_correct_answer("sangao", qtype, qid)
             if correct_ans is None:
@@ -129,28 +170,33 @@ class practiceAddHandler(tornado.web.RequestHandler):
                     score = 1
                     is_correct = 1
             elif qtype == "operation":
-                if normalize_code(student_ans) == normalize_code(correct_ans):
+                # 从NFS读取学生答案文件进行比较
+                # nfs_mount_point = "/mnt/nfs/student_answers"
+                file_path = os.path.join(LOCAL_MOUNT_POINT, student_ans)  # student_ans在这里是文件名
+                student_code = ""
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        student_code = f.read()
+                except Exception as e:
+                    logger.error(f"读取操作题文件失败 {file_path}: {e}")
+                
+                if normalize_code(student_code) == normalize_code(correct_ans):
                     score = 15
                     is_correct = 1
 
             total_score += score
 
+            # 更新数据库中的评分结果
             common.execute("sangao", """
-                INSERT INTO student_answer(
-                    student_id, question_id, user_answer, ctime, question_type, 
-                    score, exam_paper_id, submission_id, source, is_correct
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                UPDATE student_answer SET 
+                    score=?, is_correct=?, user_answer=?
+                WHERE submission_id=? AND question_id=?
             """, (
-                student_id,
-                qid,
-                student_ans[:1000],
-                int(time.time()),
-                qtype,
                 score,
-                None,
+                is_correct,
+                student_ans if qtype != "operation" else student_code[:1000],  # 对操作题保存代码片段
                 submission_id,
-                'practice',
-                is_correct
+                qid
             ))
 
         # 获取题目详情用于展示
@@ -159,10 +205,11 @@ class practiceAddHandler(tornado.web.RequestHandler):
 
         # 特殊处理操作题代码内容
         if question_type == "operation":
-            upload_dir = os.path.join(common.BASE_DIR, "sangao", "templates", "Question", "upload")
+            # nfs_mount_point = "/mnt/nfs/student_answers"
             for question in questions:
                 try:
-                    with open(os.path.join(upload_dir, question["student_answer"]), 'r', encoding='utf-8') as f:
+                    file_path = os.path.join(LOCAL_MOUNT_POINT, question["student_answer"])
+                    with open(file_path, 'r', encoding='utf-8') as f:
                         question["student_code"] = f.read()
                 except:
                     question["student_code"] = ""
@@ -363,23 +410,10 @@ class examListHandler(tornado.web.RequestHandler):
             # """, (exam_paper_id,))
             print("没有cookie")
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-        # data = [dict(row) for row in cursor.fetchall()]
-        # conn.close()
-        # self.write({"code": 200, "data": data})
-
-
-
-
-
-
-
-class listHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.render(os.path.join(common.BASE_DIR,"sangao","templates","Answer","list.html"))
-
 
 
 class examDetailHandler(tornado.web.RequestHandler):
+    """考试作答详情页面"""
     def get(self):
         # 检查登录状态
         user_id = self.get_cookie("user_id")
@@ -407,11 +441,10 @@ class examDetailHandler(tornado.web.RequestHandler):
         logger.info(f"single:{single_choice_answers}")
         logger.info(f"multiple:{multiple_choice_answers}")
         logger.info(f"tf:{tf_answers}")
-        self.render(os.path.join(common.BASE_DIR,"sangao","templates","Answer","practice_detail.html"),
+        self.render(os.path.join(common.BASE_DIR,"sangao","templates","Answer","exam_detail.html"),
                     single_choice_answers=single_choice_answers,
                     multiple_choice_answers=multiple_choice_answers,
                     tf_answers=tf_answers,
                     fill_blank_answers=fill_blank_answers,
                     operation_answers=operation_answers
-                    
                     )

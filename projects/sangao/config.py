@@ -7,6 +7,8 @@ BASE_DIR = os.path.join(os.path.dirname(__file__))
 
 UPLOAD_FILE_BASE_DIR= os.path.join(BASE_DIR,"common","static","upload","file")
 
+LOCAL_MOUNT_POINT = os.path.join(BASE_DIR,"sangao","templates","Answer","upload")
+
 UPLOAD_BASE_DIR= os.path.join(BASE_DIR,"common","static","upload")
 # 各种文件类型子目录
 UPLOAD_PATHS = {

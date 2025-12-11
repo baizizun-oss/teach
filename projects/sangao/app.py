@@ -78,7 +78,7 @@ if __name__ == '__main__':
         , (r'/sangao/Answer/practice_add', sangao.AnswerController.practiceAddHandler)
         , (r'/sangao/Answer/history', sangao.AnswerController.HistoryHandler)
         , (r'/sangao/Answer/exam_list', sangao.AnswerController.examListHandler)      
-        , (r'/sangao/Answer/list', sangao.AnswerController.listHandler)    
+        , (r'/sangao/Answer/list', sangao.AnswerController.practiceListHandler)    
         , (r'/sangao/Answer/practice_detail', sangao.AnswerController.practiceDetailHandler)   
         , (r'/sangao/Answer/exam_detail', sangao.AnswerController.examDetailHandler)   
         , (r'/sangao/Record/lists', sangao.RecordController.listsHandler)

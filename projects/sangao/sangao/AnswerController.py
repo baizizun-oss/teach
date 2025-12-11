@@ -277,7 +277,7 @@ class practiceListHandler(tornado.web.RequestHandler):
             self.write("未登录，请先<a href='/sangao/Index/login'>登录</a>！")
             return
 
-        sql="select submission_id,ctime,sum(score) as total_score from student_answer where student_id="+self.get_cookie("user_id") + " and source='practice' group by submission_id order by ctime"
+        sql="select submission_id,ctime,sum(score) as total_score from student_answer where student_id="+self.get_cookie("user_id") + " and source='practice' group by submission_id order by ctime desc"
         practice_historys= common.select("sangao",sql)
         for key in range(len(practice_historys)):
             if practice_historys[key]["total_score"] is None:

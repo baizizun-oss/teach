@@ -69,8 +69,8 @@ def install_nfs():
     """主函数：安装并挂载NFS目录"""
     # NFS服务器配置
     NFS_SERVER_IP = "192.168.100.184"
-    NFS_SERVER_PATH = "/home/bgp1984/projects/server_184/sangao/Answer/upload"
-    LOCAL_MOUNT_POINT = os.path.join(os.path.dirname(__file__),"..","sangao","sangao","templates","Answer","upload")
+    NFS_SERVER_PATH = "/home/bgp1984/projects/server_184/projects/sangao/common/static/upload/operation_question/files"
+    LOCAL_MOUNT_POINT = os.path.join(os.path.dirname(__file__),"..","projects","sangao","sangao","templates","Answer","upload","operation_question","files")
 
     print(f"🔧 开始配置NFS挂载: {NFS_SERVER_IP}:{NFS_SERVER_PATH} -> {LOCAL_MOUNT_POINT}")
     

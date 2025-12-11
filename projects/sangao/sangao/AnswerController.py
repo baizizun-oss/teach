@@ -189,12 +189,12 @@ class practiceAddHandler(tornado.web.RequestHandler):
             # 更新数据库中的评分结果
             common.execute("sangao", """
                 UPDATE student_answer SET 
-                    score=?, is_correct=?, user_answer=?
+                    score=?, is_correct=?
                 WHERE submission_id=? AND question_id=?
             """, (
                 score,
                 is_correct,
-                student_ans if qtype != "operation" else student_code[:1000],  # 对操作题保存代码片段
+                # student_ans if qtype != "operation" else student_code[:1000],  # 对操作题保存代码片段
                 submission_id,
                 qid
             ))

@@ -13,9 +13,7 @@ import time
 import myportal.common as common
 from sangao_admin.KnowledgeModel import Knowledge
 from sangao_admin.QuestionModel import SingleChoiceModel
-from config import UPLOAD_PATHS
 from sangao_admin.QuestionModel import KnowledgeModel
-from config import UPLOAD_BASE_DIR,STATIC_PATHS
 import logging
 logger = logging.getLogger(__name__)
 

@@ -2,50 +2,123 @@
 
 import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-BASE_DIR = os.path.join(os.path.dirname(__file__))
+UPLOAD_ROOT = os.getenv("STORAGE_ROOT", os.path.join(BASE_DIR, "common", "upload"))
+SANGAO_PATH = os.getenv("SANGAO_PATH", os.path.join(BASE_DIR, "sangao"))
+SANGAO_ADMIN_PATH = os.getenv("SANGAO_ADMIN_PATH", os.path.join(BASE_DIR, "sangao_admin"))
 
-UPLOAD_FILE_BASE_DIR= os.path.join(BASE_DIR,"common","static","upload","file")
+PATH = {
+    "sangao": {
+        "Question": {
+            "js": os.path.join(BASE_DIR, "sangao", "templates", "Question", "static", "js"),
+            "css": os.path.join(BASE_DIR, "sangao", "templates", "Question", "static", "css"),
+            "images":{
+                "operation": os.path.join(UPLOAD_ROOT, "question", "operation", "images"),
+                "single_choice": os.path.join(UPLOAD_ROOT, "question", "single_choice", "images"),
+                "multiple_choice": os.path.join(UPLOAD_ROOT, "question", "multiple_choice", "images"),
+                "fill_blank": os.path.join(UPLOAD_ROOT, "question", "fill_blank", "images"),
+                "true_false": os.path.join(UPLOAD_ROOT, "question", "true_false", "images"),
 
-# LOCAL_MOUNT_POINT = os.path.join(BASE_DIR,"sangao","templates","Answer","upload")
+            },
+            "files":{
+                "operation": os.path.join(UPLOAD_ROOT, "question", "operation", "files"),
+                
+            }
 
-LOCAL_MOUNT_POINT = os.path.join(BASE_DIR,"sangao","templates","Answer","upload","operation_question","files")
+            }
 
 
-UPLOAD_BASE_DIR= os.path.join(BASE_DIR,"common","static","upload")
-# 各种文件类型子目录
-UPLOAD_PATHS = {
-    'single_choice': os.path.join(UPLOAD_FILE_BASE_DIR, "single_choice_question","images"),
-    'multiple_choice': os.path.join(UPLOAD_FILE_BASE_DIR, "multiple_choice_question"),
-    'true_false': os.path.join(UPLOAD_FILE_BASE_DIR, "true_false_question"),
-    'operation_files': os.path.join(UPLOAD_FILE_BASE_DIR, "operation_question","files"),
-    'operation_images': os.path.join(UPLOAD_FILE_BASE_DIR, "operation_question","images"),
+        },
+    
+    "sangao_admin": {
+        "Question": {
+            "operation": {
+                "files": os.path.join(UPLOAD_ROOT, "question", "operation", "files"),
+                "images": os.path.join(UPLOAD_ROOT, "question", "operation", "images"),
+                "css": os.path.join(BASE_DIR, "sangao_admin", "templates", "Question", "static", "css"),
+            }
+        },
+        "TeachExam": {
+            "js": os.path.join(BASE_DIR, "sangao_admin", "templates", "TeachExam", "static", "js"),
+            "images": {
+                "board": os.path.join(SANGAO_ADMIN_PATH, "upload", "TeachExam", "images", "board"),
+            }
+        },
+        
+
+    }
 }
 
-#确保各个上传目录存在
-for path in UPLOAD_PATHS.values():
-    os.makedirs(path, exist_ok=True)
+def get_path(*keys):
+    """
+    从 PATH 中根据任意深度的键路径获取绝对路径。
+    
+    参数:
+        *keys: 路径键序列，对应 PATH 的嵌套层级
+        
+    示例:
+        get_path("sangao", "templates", "Question", "static", "js")
+        get_path("sangao", "upload", "question", "operation", "files")
+        get_path("sangao_admin", "templates", "Question", "static", "css")
+    """
+    if not keys:
+        raise ValueError("至少需要一个路径键")
+    
+    current = PATH
+    path_so_far = []
+    
+    for i, key in enumerate(keys):
+        path_so_far.append(key)
+        if not isinstance(current, dict):
+            raise TypeError(
+                f"在路径 {' -> '.join(path_so_far[:-1])} 处期望 dict，但得到 {type(current).__name__}"
+            )
+        if key not in current:
+            available = list(current.keys()) if isinstance(current, dict) else []
+            raise KeyError(
+                f"键 '{key}' 不存在于路径 {' -> '.join(path_so_far[:-1]) or '根'}。可用键: {available}"
+            )
+        current = current[key]
+    
+    if not isinstance(current, str):
+        raise TypeError(
+            f"最终值必须是字符串路径，但在路径 {' -> '.join(keys)} 得到 {type(current).__name__}: {current}"
+        )
+    
+    return current
 
 
-STATIC_PATHS = {
-    'single_choice_question_images': os.path.join(UPLOAD_BASE_DIR, "single_choice_question","images"),
-    'multiple_choice': os.path.join(UPLOAD_BASE_DIR, "multiple_choice_question"),
-    'true_false': os.path.join(UPLOAD_BASE_DIR, "true_false_question"),
-    'operation_images': os.path.join(UPLOAD_BASE_DIR, "operation_question","images"),
-    'operation_files': os.path.join(UPLOAD_BASE_DIR, "operation_question","files"),
-    'fill_blank': os.path.join(UPLOAD_BASE_DIR, "fill_blank_question"),
-    'board_pic': os.path.join(BASE_DIR,"sangao_admin","templates","TeachExam","upload")
-}
+def _collect_leaf_paths(obj):
+    """递归收集所有叶子节点（字符串路径）"""
+    if isinstance(obj, str):
+        return [obj]
+    elif isinstance(obj, dict):
+        paths = []
+        for value in obj.values():
+            paths.extend(_collect_leaf_paths(value))
+        return paths
+    return []
 
-# 定义多个静态文件目录的绝对路径
-STATIC_PATH = os.path.join(BASE_DIR, "static")  # 通用静态资源
-# SINGLE_CHOICE_QUESTION_UPLOAD_IMAGES_PATH = os.path.join(UPLOAD_FILE_BASE_DIR, "single_choice_question","images")
-# UPLOAD_STUDENT_WORKS_PATH = os.path.join(BASE_DIR, "uploads", "student_works")
-# UPLOAD_MATERIAL_ATTACHMENTS_PATH = os.path.join(BASE_DIR, "uploads", "material_attachments")
 
-# 定义Tornado应用的settings字典
-settings = {
-    "static_path": STATIC_PATH,  # 默认静态路径
-    #"template_path": os.path.join(BASE_DIR, "templates"),
-    "debug": True,
-}
+def init_storage_dirs():
+    """初始化所有存储目录（仅针对 upload 类路径，但这里简单全量创建）"""
+    all_paths = _collect_leaf_paths(PATH)
+    for path in all_paths:
+        # 可选：只创建 upload 相关目录（避免创建 templates/static 等非上传目录）
+        # 但 os.makedirs(exist_ok=True) 是安全的
+        os.makedirs(path, exist_ok=True)
+        print(f"📁 确保目录存在: {path}")
+
+
+# 初始化
+init_storage_dirs()
+
+# 使用示例
+if __name__ == "__main__":
+    js_path = get_path("sangao", "templates", "Question", "static", "js")
+    op_images = get_path("sangao", "upload", "question", "fill_blank", "images")
+    admin_css = get_path("sangao_admin", "templates", "Question", "static", "css")
+    print("JS Path:", js_path)
+    print("Fill-blank images:", op_images)
+    print("Admin CSS:", admin_css)

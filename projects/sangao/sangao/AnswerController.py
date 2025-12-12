@@ -9,7 +9,7 @@ import os
 import uuid
 import re
 import subprocess
-from config import LOCAL_MOUNT_POINT
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class practiceAddHandler(tornado.web.RequestHandler):
                 
                 # 生成唯一文件名
                 filename = str(uuid.uuid4()) + os.path.splitext(files[0]['filename'])[1]
-                file_path = os.path.join(LOCAL_MOUNT_POINT, filename)
+                file_path = os.path.join(config.get_storage_path("question","operation","files"), filename)
                 logger.info(f"file_path: {file_path}")
                 # 先将文件保存到NFS
                 with open(file_path, 'wb') as f:

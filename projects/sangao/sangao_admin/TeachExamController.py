@@ -9,7 +9,7 @@ import logging
 import json
 from jobs.asr_client import transcribe_audio_file_sync 
 from jobs.llm_client import polish_transcript_sync
-from config import UPLOAD_BASE_DIR,STATIC_PATHS
+import config
 from sangao_admin.RecordService import extract_teaching_chain
 import uuid
 

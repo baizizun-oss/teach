@@ -5,6 +5,7 @@ import tornado.options
 import tornado.web
 import os
 
+import config
 import sangao.DesignController
 import sangao.IndexController
 import sangao.ExamController
@@ -132,18 +133,17 @@ if __name__ == '__main__':
         , (r'/sangao_admin/Record/logic_chain', sangao_admin.RecordController.getLogicChainHandler)                         
         , (r'/sangao_admin/Index/click_statistics', sangao_admin.IndexController.clickStatisticsHandler),
               # 配置多个静态目录路由
-        (r'/static_single_choice_question_images/(.*)', StaticFileHandler, {'path': config.STATIC_PATHS["single_choice_question_images"]}),
-        (r'/static_multiple_choice_question_images/(.*)', StaticFileHandler, {'path': config.STATIC_PATHS["multiple_choice"]}),
-        (r'/static_fill_blank_question_images/(.*)', StaticFileHandler, {'path': config.STATIC_PATHS["multiple_choice"]}),
-        (r'/static_operation_question_images/(.*)', StaticFileHandler, {'path': config.STATIC_PATHS["operation_images"]}),
-        (r'/static_operation_question_files/(.*)', StaticFileHandler, {'path': config.STATIC_PATHS["operation_files"]}),
-        (r'/static_fill_blank_question_files/(.*)', StaticFileHandler, {'path': config.STATIC_PATHS["fill_blank"]}),
-        (r'/board_pic/(.*)', StaticFileHandler, {'path': config.STATIC_PATHS["board_pic"]}),
-        (r'/static_Question_js/(.*)',StaticFileHandler, {'path': os.path.join(common.BASE_DIR, "sangao", "templates", "Question", "static", "js")}),
-        (r'/static_js/(.*)',StaticFileHandler, {'path': os.path.join(common.BASE_DIR, "sangao_admin", "templates", "TeachExam", "static", "js")}),
+        (r'/static_single_choice_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","single_choice")}),
+        (r'/static_multiple_choice_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","multiple_choice")}),
+        (r'/static_fill_blank_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","fill_blank")}),
+        (r'/static_operation_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","operation")}),
+        (r'/static_operation_question_files/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","files","operation")}),
+        (r'/board_pic/(.*)', StaticFileHandler, {'path': config.get_path("sangao_admin","TeachExam", "images","board")}),
+        (r'/static_Question_js/(.*)',StaticFileHandler, {'path': config.get_path("sangao","Question", "js")}),
+        (r'/static_js/(.*)',StaticFileHandler, {'path': config.get_path("sangao_admin", "TeachExam", "js")}),
 
         ],
-        **config.settings
+        
     )
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(options.port)

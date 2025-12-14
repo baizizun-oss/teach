@@ -503,7 +503,7 @@ class examListHandler(tornado.web.RequestHandler):
             #     WHERE sa.exam_paper_id = ? AND sa.student_id = ?
             #     ORDER BY sa.ctime
             # """, (exam_paper_id, student_id))
-            sql="select sum(score) as total_score,submission_id,exam_paper.title as exam_paper_title,student_answer.ctime as student_answer_ctime from student_answer join exam_paper on exam_paper.id = student_answer.exam_paper_id where student_id="+student_id+" and source='exam' group by submission_id order by student_answer_ctime"
+            sql="select sum(score) as total_score,submission_id,exam_paper.title as exam_paper_title,student_answer.ctime as student_answer_ctime from student_answer join exam_paper on exam_paper.id = student_answer.exam_paper_id where student_id="+student_id+" and source='exam' group by submission_id order by student_answer_ctime deasc"
             student_answer = common.select("sangao",sql)
             for key in range(len(student_answer)):
                 student_answer[key]["student_answer_ctime"]=time.strftime('%Y-%m-%d %H:%M',time.localtime(student_answer[key]["student_answer_ctime"]))

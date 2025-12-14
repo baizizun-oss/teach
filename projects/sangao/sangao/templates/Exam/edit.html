@@ -43,7 +43,7 @@ textarea{
       {%for vo in single_choice_questions%}  
     <tr>
       <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="single_choice_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="single_choice"></th>
-      <th scope="row">{{vo["title"]}}<img width="500" src="/static_single_choice_question_images/{{vo['picture']}}"></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_single_choice_question_images/{{vo['picture']}}">{%end%}</th>
       <td>&nbsp;</td>
       <td>
         <p>
@@ -65,7 +65,7 @@ textarea{
     {%for vo in true_false_questions%}
     <tr>
       <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="tf_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="true_false"></th>
-      <th scope="row">{{vo["title"]}}<img width="500" src="{{static_url('sangao/templates/Exam/upload/')+vo['picture']}}" alt=""></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_tf_question_images/{{vo['picture']}}" alt="">{%end%}</th>
       <td>&nbsp;</td>
       <td>
       <p><input type="radio" name="tf_answer[{{vo['question_id']}}]" value="right">对</p>
@@ -98,7 +98,7 @@ textarea{
     {%for vo in operation_questions%}
     <tr>
       <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="operation_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="operation"></th>
-      <th scope="row">{{vo["title"]}}<img width="500" src="{{static_url('sangao/templates/Question/upload/')+vo['picture']}}" alt=""></th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_operation_question_images/{{vo['picture']}}">{% end %}</th>
       <td>{% if vo["material"] != "" %} <span>文件1</span><a href="/static_operation_question_files/{{vo['material']}}">{{vo["material"]}}</a>{% end %}
         {% if vo["material2"] != "" %}<span>文件2</span><a href="/static_operation_question_files/{{vo['material2']}}">{{vo["material2"]}}</a>{% end %}</td>
       <td><input type="file" name="file_{{vo['question_id']}}"></td>

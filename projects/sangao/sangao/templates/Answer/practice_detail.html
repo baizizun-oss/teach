@@ -134,7 +134,8 @@ textarea{
   <caption style="font-size: 100px;">操作题</caption>  
   <tr>
     <th>题号</th>
-    <th colspan="2">题目(点击查看每题详情)</th>
+    <th>题目(点击查看每题详情)</th>
+    <th>得分</th>
   </tr>       
   {%for vo in operation_answers%}
   <tr>
@@ -142,6 +143,7 @@ textarea{
     <th scope="row"><a href="question_answer_detail?question_id={{vo['question_id']}}&submission_id={{vo['submission_id']}}&question_type=operation">{{vo['title']}}</a></th>
     <!-- <td>{% if vo["user_answer"] != "" %} <span>文件1:</span><a href="/static_Answer_files/{{vo['user_answer']}}">{{vo["user_answer"]}}</a>{% end %}</td> -->
     <!-- <td>{% if vo["answer"] != "" %} <span>文件1:</span><a href="/static_operation_question_files/{{vo['answer']}}">{{vo["answer"]}}</a>{% end %}</td> -->
+    <td>{{vo["score"]}}</td>
   </tr>    
   {%end%}                    
   {%end%}  

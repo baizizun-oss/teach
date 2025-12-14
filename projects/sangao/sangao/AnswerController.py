@@ -206,7 +206,7 @@ class practiceAddHandler(tornado.web.RequestHandler):
             # nfs_mount_point = "/mnt/nfs/student_answers"
             for question in questions:
                 try:
-                    file_path = os.path.join(LOCAL_MOUNT_POINT, question["student_answer"])
+                    file_path = os.path.join(config.get_path("sangao","Answer","files"), question["student_answer"])
                     with open(file_path, 'r', encoding='utf-8') as f:
                         question["student_code"] = f.read()
                 except:
@@ -251,8 +251,28 @@ class practiceAddHandler(tornado.web.RequestHandler):
         if not table:
             return None
 
-        rows = common.select(db_name, f"SELECT answer FROM {table} WHERE id ={question_id}")
-        return rows[0]["answer"] if rows and rows[0]["answer"] is not None else None
+        # 特殊处理操作题，需要读取参考答案文件内容
+        if question_type == "operation":
+            rows = common.select(db_name, f"SELECT answer FROM {table} WHERE id = ?", (question_id,))
+            if not rows:
+                return None
+            
+            ref_filename = rows[0]["answer"]
+            if not ref_filename:
+                return None
+                
+            # 构建参考答案文件路径并读取内容
+            ref_file_path = os.path.join(config.get_path("sangao", "Question", "files", "operation"), ref_filename)
+            try:
+                with open(ref_file_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception as e:
+                logger.error(f"读取操作题参考答案文件失败 {ref_file_path}: {e}")
+                return None
+        else:
+            # 其他题型保持原有逻辑
+            rows = common.select(db_name, f"SELECT answer FROM {table} WHERE id = ?", (question_id,))
+            return rows[0]["answer"] if rows and rows[0]["answer"] is not None else None
 
     def fetch_submitted_questions(self, qtype, qids):
         if not qids:

@@ -100,31 +100,43 @@ def find(db="",sql=""):
     finally:
         conn.close()  # 确保连接关闭[8](@ref)        
     
-def select(db="",sql=""):
-    conn=sqlite3.connect(os.path.join(BASE_DIR,"db",db+".db"))
-    cursor=conn.cursor()
-    result=cursor.execute(sql)
-    conn.commit()
-    resultset= cursor.fetchall()
-    conn.close()
-    #print("结果集:",resultset)
-    col_name_list = [tuple[0] for tuple in cursor.description]
-    #print("结果集字段名:",col_name_list)
-    if len(resultset)==0:
-        result={col_name_list[0]:None}
-        for i in range(1,len(col_name_list)):
-            result[col_name_list[i]]=None
-        #print("空结果集:",[result])
-        return [result]
-    elif len(resultset)==1:
-        #print("单行结果集:",[dict(zip(col_name_list,resultset[0]))])
-        return [dict(zip(col_name_list,resultset[0]))]
-    else:
-        result_list=[dict(zip(col_name_list,resultset[0]))]
-        for i in range(1,len(resultset)):
-            result_list+=[dict(zip(col_name_list,resultset[i]))]
-        #print("result_list:",result_list)
-        return result_list
+def select(db="", sql="", parameters=()):
+    """
+    执行 SELECT 查询（支持参数化查询）
+    
+    :param db: 数据库名（如 "sangao"），对应 db/{db_name}.db
+    :param sql: SQL 查询语句，使用 ? 作为占位符
+    :param parameters: 参数元组，默认为空元组
+    :return: 字典列表，每个元素是一行记录
+    """
+    db_path = os.path.join(BASE_DIR, "db", db + ".db")
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
+        if parameters:
+            cursor.execute(sql, parameters)  # 使用参数化查询
+        else:
+            cursor.execute(sql)  # 兼容旧用法
+        
+        resultset = cursor.fetchall()
+        col_name_list = [tuple[0] for tuple in cursor.description] if cursor.description else []
+        
+        if not col_name_list:  # 无结果集字段
+            return []
+            
+        if len(resultset) == 0:
+            # 空结果集：返回带 None 值的字典
+            result = {col_name: None for col_name in col_name_list}
+            return [result]
+        elif len(resultset) == 1:
+            # 单行结果集
+            return [dict(zip(col_name_list, resultset[0]))]
+        else:
+            # 多行结果集
+            result_list = [dict(zip(col_name_list, row)) for row in resultset]
+            return result_list
+    finally:
+        conn.close()
         
     
     

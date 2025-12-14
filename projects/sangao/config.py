@@ -14,11 +14,11 @@ PATH = {
             "js": os.path.join(BASE_DIR, "sangao", "templates", "Question", "static", "js"),
             "css": os.path.join(BASE_DIR, "sangao", "templates", "Question", "static", "css"),
             "images":{
-                "operation": os.path.join(UPLOAD_ROOT, "question", "operation", "images"),
-                "single_choice": os.path.join(UPLOAD_ROOT, "question", "single_choice", "images"),
-                "multiple_choice": os.path.join(UPLOAD_ROOT, "question", "multiple_choice", "images"),
-                "fill_blank": os.path.join(UPLOAD_ROOT, "question", "fill_blank", "images"),
-                "true_false": os.path.join(UPLOAD_ROOT, "question", "true_false", "images"),
+                "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "images"),
+                "single_choice": os.path.join(UPLOAD_ROOT, "Question", "single_choice", "images"),
+                "multiple_choice": os.path.join(UPLOAD_ROOT, "Question", "multiple_choice", "images"),
+                "fill_blank": os.path.join(UPLOAD_ROOT, "Question", "fill_blank", "images"),
+                "true_false": os.path.join(UPLOAD_ROOT, "Question", "true_false", "images"),
             },
             "files":{
                 "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "files"),
@@ -29,10 +29,10 @@ PATH = {
             "css": os.path.join(BASE_DIR, "sangao", "templates", "Answer", "static", "css"),
             "images":{
                 "operation": os.path.join(UPLOAD_ROOT, "Answer", "operation", "images"),
-                "single_choice": os.path.join(UPLOAD_ROOT, "question", "single_choice", "images"),
-                "multiple_choice": os.path.join(UPLOAD_ROOT, "question", "multiple_choice", "images"),
-                "fill_blank": os.path.join(UPLOAD_ROOT, "question", "fill_blank", "images"),
-                "true_false": os.path.join(UPLOAD_ROOT, "question", "true_false", "images"),
+                "single_choice": os.path.join(UPLOAD_ROOT, "Question", "single_choice", "images"),
+                "multiple_choice": os.path.join(UPLOAD_ROOT, "Question", "multiple_choice", "images"),
+                "fill_blank": os.path.join(UPLOAD_ROOT, "Question", "fill_blank", "images"),
+                "true_false": os.path.join(UPLOAD_ROOT, "Question", "true_false", "images"),
             },
             "files": os.path.join(UPLOAD_ROOT, "Answer", "files"),
         }        

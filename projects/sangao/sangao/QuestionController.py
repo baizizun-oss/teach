@@ -458,6 +458,9 @@ class selectHandler(tornado.web.RequestHandler):
             self.render(os.path.join(common.BASE_DIR,"sangao","templates","Question","select.html"),knowledges=knowledges,modules=modules)
 
     def post(self):
+        if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
+            print("没有cookie")
+            self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")        
         post_data = self.request.arguments
         post_data = {x: post_data.get(x)[0].decode("utf-8") for x in post_data.keys()}
         if not post_data:

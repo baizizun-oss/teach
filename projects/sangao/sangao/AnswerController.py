@@ -51,9 +51,9 @@ class practiceAddHandler(tornado.web.RequestHandler):
 
     def post(self):
         student_id = self.get_cookie("user_id")
-        # if not student_id:
-        #     self.write("未登录，请先<a href='/sangao/Index/login'>登录</a>")
-        #     return
+        if not student_id:
+            self.write("未登录，请先<a href='/sangao/Index/login'>登录</a>")
+            return
 
         question_type = self.get_argument("type", None)
         module = self.get_argument("module", None)
@@ -215,7 +215,28 @@ class practiceAddHandler(tornado.web.RequestHandler):
 
 
 
-        self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("提交成功!请去“我的作答”中查看作答情况");</script></body></html>') 
+
+
+        # 非操作题跳转到练习详情列表
+        redirect_url = f"/sangao/Answer/practiceDetail?submission_id={submission_id}"
+
+        # === 修改：替换原有的跳转逻辑 ===
+        self.write(f'''
+        <html>
+        <head><title>提交成功</title></head>
+        <body>
+            <script type="text/javascript">
+                window.alert("提交成功!");
+                // 使用完整URL跳转（关键修复）
+                window.location.href = "{redirect_url}";
+            </script>
+        </body>
+        </html>
+        ''')
+
+
+
+        # self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("提交成功!请去“我的作答”中查看作答情况");window.location.href("{redirect_url}")</script></body></html>') 
 
 
     def get_correct_answer(self, db_name, question_type, question_id):

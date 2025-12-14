@@ -71,7 +71,7 @@ class loginHandler(tornado.web.RequestHandler):
         # self.render(os.path.join(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html")))
         # #self.redirect("index.html")
         if user[0]["id"]!=None:
-            self.set_cookie("user_id",str(user[0]["id"]),expires=time.time()+300)
+            self.set_cookie("user_id",str(user[0]["id"]),expires=time.time()+3600)
             # self.set_cookie("status","已登录")
             self.write("登录成功！")
             self.render(os.path.join(os.path.join(common.BASE_DIR,"sangao","templates","Index","index.html")),uid=user[0]["id"])

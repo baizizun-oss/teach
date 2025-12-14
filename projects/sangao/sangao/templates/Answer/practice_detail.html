@@ -139,11 +139,9 @@ textarea{
   {%for vo in operation_answers%}
   <tr>
     <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="operation_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="operation"></th>
-    <th scope="row"><a href="question_answer_detail?question_id={{vo['question_id']}}&submission_id={{vo['submission_id']}}&question_type=operation">{{vo['title']}}</a>{% if vo["picture"] != "" %}<img width="500" src="/static_operation_question_images/{{vo['picture']}}">{% end %}</th>
+    <th scope="row"><a href="question_answer_detail?question_id={{vo['question_id']}}&submission_id={{vo['submission_id']}}&question_type=operation">{{vo['title']}}</a></th>
     <!-- <td>{% if vo["user_answer"] != "" %} <span>文件1:</span><a href="/static_Answer_files/{{vo['user_answer']}}">{{vo["user_answer"]}}</a>{% end %}</td> -->
     <!-- <td>{% if vo["answer"] != "" %} <span>文件1:</span><a href="/static_operation_question_files/{{vo['answer']}}">{{vo["answer"]}}</a>{% end %}</td> -->
-
-
   </tr>    
   {%end%}                    
   {%end%}  

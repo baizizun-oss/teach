@@ -7,6 +7,7 @@ import requests
 import warnings
 import os
 import uuid
+import config
 
 warnings.filterwarnings('ignore')
 import time
@@ -136,7 +137,7 @@ class editHandler(tornado.web.RequestHandler):
             data["answer"]=self.get_argument("correct_answer")
             data["difficult"]=self.get_argument("difficult")            
             sql="update single_choice_question set title='"+data["title"]+"',choice1='"+data["choice1"]+"',choice2='"+data["choice2"]+"',choice3='"+data["choice3"]+"',choice4='"+data["choice4"]+"',module='"+data["module"]+"',answer='"+data["answer"]+"',difficult='"+data["difficult"]+"',knowledge='"+data["knowledge"]+"'"
-            UPLOAD_FILE_PATH = STATIC_PATHS["single_choice_question_images"]
+            UPLOAD_FILE_PATH = config.get_path("sangao_admin","Question","images","single_choice")
             if self.request.files.get('photo1', None):
                 uploadFile = self.request.files['photo1'][0]
                 # 生成新的文件名
@@ -239,8 +240,8 @@ class editHandler(tornado.web.RequestHandler):
             data["difficult"]=self.get_argument("difficult")
             sql="update operation_question set title='"+data["title"]+"',module="+data["module"]+",knowledge="+data["knowledge"]
 
-            UPLOAD_FILE_PATH = STATIC_PATHS["operation_files"]
-            UPLOAD_IMAGE_PATH = STATIC_PATHS["operation_images"]
+            UPLOAD_FILE_PATH = config.get_path("sangao_admin","Question","files","operation")
+            UPLOAD_IMAGE_PATH = config.get_path("sangao_admin","Question","images","operation")
             if self.request.files.get('photo1', None):
                 uploadFile = self.request.files['photo1'][0]
                 # 生成新的文件名

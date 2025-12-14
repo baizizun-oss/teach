@@ -68,10 +68,9 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    from services.install_ssh import install_ssh_with_prompt
-    from services.install_docker import install_docker
-    from services.install_nfs import install_nfs
+
     from projects.deploy_sangao import deploy_sangao
+    from services.install_rustdesk import install_rustdesk
 except ImportError as e:
     print(f"❌ 模块导入失败: {e}")
     print("请确保目录结构正确。")
@@ -86,8 +85,7 @@ def main():
 
     print("\n⚠️  注意：部署过程需要多次输入 sudo 密码以完成系统配置")
     
-    install_ssh_with_prompt()
-    install_nfs()
+    install_rustdesk()
     deploy_sangao()
 
 

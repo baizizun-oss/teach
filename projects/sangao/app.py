@@ -80,7 +80,9 @@ if __name__ == '__main__':
         , (r'/sangao/Answer/history', sangao.AnswerController.HistoryHandler)
         , (r'/sangao/Answer/exam_list', sangao.AnswerController.examListHandler)      
         , (r'/sangao/Answer/list', sangao.AnswerController.practiceListHandler)    
-        , (r'/sangao/Answer/practice_detail', sangao.AnswerController.practiceDetailHandler)   
+        , (r'/sangao/Answer/practice_detail', sangao.AnswerController.practiceDetailHandler)
+        , (r'/sangao/Answer/question_answer_detail', sangao.AnswerController.questionAnswerDetailHandler)
+        , (r'/sangao/Answer/download', sangao.AnswerController.downloadFileHandler)   
         , (r'/sangao/Answer/exam_detail', sangao.AnswerController.examDetailHandler)   
         , (r'/sangao/Record/lists', sangao.RecordController.listsHandler)
         , (r'/sangao/Record/detail', sangao.RecordController.detailHandler)
@@ -138,6 +140,7 @@ if __name__ == '__main__':
         (r'/static_fill_blank_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","fill_blank")}),
         (r'/static_operation_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","operation")}),
         (r'/static_operation_question_files/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","files","operation")}),
+        (r'/static_Answer_files/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Answer","files")}),
         (r'/board_pic/(.*)', StaticFileHandler, {'path': config.get_path("sangao_admin","TeachExam", "images","board")}),
         (r'/static_Question_js/(.*)',StaticFileHandler, {'path': config.get_path("sangao","Question", "js")}),
         (r'/static_js/(.*)',StaticFileHandler, {'path': config.get_path("sangao_admin", "TeachExam", "js")}),

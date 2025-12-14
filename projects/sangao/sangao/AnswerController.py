@@ -51,9 +51,9 @@ class practiceAddHandler(tornado.web.RequestHandler):
 
     def post(self):
         student_id = self.get_cookie("user_id")
-        if not student_id:
-            self.write("未登录，请先<a href='/sangao/Index/login'>登录</a>")
-            return
+        # if not student_id:
+        #     self.write("未登录，请先<a href='/sangao/Index/login'>登录</a>")
+        #     return
 
         question_type = self.get_argument("type", None)
         module = self.get_argument("module", None)
@@ -108,7 +108,7 @@ class practiceAddHandler(tornado.web.RequestHandler):
                 
                 # 生成唯一文件名
                 filename = str(uuid.uuid4()) + os.path.splitext(files[0]['filename'])[1]
-                file_path = os.path.join(config.get_storage_path("question","operation","files"), filename)
+                file_path = os.path.join(config.get_path("sangao","Answer","files"), filename)
                 logger.info(f"file_path: {file_path}")
                 # 先将文件保存到NFS
                 with open(file_path, 'wb') as f:
@@ -170,9 +170,7 @@ class practiceAddHandler(tornado.web.RequestHandler):
                     score = 1
                     is_correct = 1
             elif qtype == "operation":
-                # 从NFS读取学生答案文件进行比较
-                # nfs_mount_point = "/mnt/nfs/student_answers"
-                file_path = os.path.join(LOCAL_MOUNT_POINT, student_ans)  # student_ans在这里是文件名
+                file_path = os.path.join(config.get_path("sangao","Answer","files"), student_ans)  # student_ans在这里是文件名
                 student_code = ""
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
@@ -316,6 +314,10 @@ class practiceDetailHandler(tornado.web.RequestHandler):
         logger.info(f"single:{single_choice_answers}")
         logger.info(f"multiple:{multiple_choice_answers}")
         logger.info(f"tf:{tf_answers}")
+
+
+
+        
         self.render(os.path.join(common.BASE_DIR,"sangao","templates","Answer","practice_detail.html"),
                     single_choice_answers=single_choice_answers,
                     multiple_choice_answers=multiple_choice_answers,
@@ -324,6 +326,76 @@ class practiceDetailHandler(tornado.web.RequestHandler):
                     operation_answers=operation_answers
                     
                     )
+
+
+class questionAnswerDetailHandler(tornado.web.RequestHandler):
+    def get(self):
+        # 检查登录状态
+        user_id = self.get_cookie("user_id")
+        if not user_id:
+            self.write("未登录，请先<a href='/sangao/Index/login'>登录</a>！")
+            return
+        if self.get_argument("question_type")=="operation":
+            operation_sql="select * from student_answer join operation_question on operation_question.id = student_answer.question_id where submission_id='"+self.get_argument("submission_id") + "' and question_type = 'operation' and question_id='"+self.get_argument("question_id") + "'"
+            operation_answer=common.find("sangao",operation_sql)
+
+        
+            self.render(os.path.join(common.BASE_DIR,"sangao","templates","Answer","operation_answer_detail.html"),
+                        operation_answer=operation_answer
+                        )
+
+import os
+import urllib.parse
+from tornado.web import HTTPError
+import config
+
+class downloadFileHandler(tornado.web.RequestHandler):
+    def get(self):
+        # 获取参数
+        filename = self.get_argument("filename", None)
+        file_type = self.get_argument("type", "answer")  # answer / material
+
+        if not filename:
+            raise HTTPError(400, "缺少文件名")
+
+        # 安全校验：防止路径穿越（非常重要！）
+        filename = os.path.basename(filename)  # 只取文件名，去掉路径
+        if ".." in filename or "/" in filename or "\\" in filename:
+            raise HTTPError(403, "非法文件名")
+
+        # 根据 type 决定目录
+        if file_type == "answer":
+            base_dir = config.get_path("sangao","Question","files","operation")
+        elif file_type == "material":
+            base_dir = os.path.join(common.BASE_DIR, "sangao", "static_operation_question_files")
+        else:
+            raise HTTPError(400, "未知文件类型")
+
+        file_path = os.path.join(base_dir, filename)
+
+        if not os.path.exists(file_path):
+            raise HTTPError(404, "文件不存在")
+
+        # 设置响应头：强制下载 + 正确编码文件名
+        # 对中文文件名进行 URL 编码（兼容 Safari、IE）
+        encoded_filename = urllib.parse.quote(filename.encode('utf-8'))
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header(
+            'Content-Disposition',
+            f'attachment; filename="{encoded_filename}"; filename*=UTF-8\'\'{encoded_filename}'
+        )
+
+        # 发送文件
+        with open(file_path, 'rb') as f:
+            while True:
+                data = f.read(8192)
+                if not data:
+                    break
+                self.write(data)
+        self.finish()
+
+
+
 
 class HistoryHandler(tornado.web.RequestHandler):
     """查询某题的历史作答记录（用于错题本、复习）"""

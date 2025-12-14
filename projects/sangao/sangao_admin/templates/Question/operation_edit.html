@@ -125,7 +125,7 @@ textarea{
 
     <tr>
       <th scope="row">标准答案文件</th>
-      <td><input type="file" name="correct_answer" class="file">{% if question["material"]!="" %}<a href="/static_operation_question_files/{{question['answer']}}">{{question["answer"]}}</a>{% end %}</td>
+      <td><input type="file" name="correct_answer" class="file">{% if question["answer"]!="" %}<a href="/static_operation_question_files/{{question['answer']}}">{{question["answer"]}}</a>{% end %}</td>
     </tr>
     <tr>
       <th scope="row">&nbsp;</th>

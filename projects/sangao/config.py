@@ -4,7 +4,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-UPLOAD_ROOT = os.getenv("STORAGE_ROOT", os.path.join(BASE_DIR, "common", "upload"))
+UPLOAD_ROOT = os.getenv("STORAGE_ROOT", os.path.join(BASE_DIR, "upload")) #此为sangao和sangao_admin共同使用的上传目录
 SANGAO_PATH = os.getenv("SANGAO_PATH", os.path.join(BASE_DIR, "sangao"))
 SANGAO_ADMIN_PATH = os.getenv("SANGAO_ADMIN_PATH", os.path.join(BASE_DIR, "sangao_admin"))
 
@@ -19,24 +19,35 @@ PATH = {
                 "multiple_choice": os.path.join(UPLOAD_ROOT, "question", "multiple_choice", "images"),
                 "fill_blank": os.path.join(UPLOAD_ROOT, "question", "fill_blank", "images"),
                 "true_false": os.path.join(UPLOAD_ROOT, "question", "true_false", "images"),
-
             },
             "files":{
-                "operation": os.path.join(UPLOAD_ROOT, "question", "operation", "files"),
-                
+                "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "files"),
             }
-
-            }
-
-
         },
+        "Answer": {
+            "js": os.path.join(BASE_DIR, "sangao", "templates", "Answer", "static", "js"),
+            "css": os.path.join(BASE_DIR, "sangao", "templates", "Answer", "static", "css"),
+            "images":{
+                "operation": os.path.join(UPLOAD_ROOT, "Answer", "operation", "images"),
+                "single_choice": os.path.join(UPLOAD_ROOT, "question", "single_choice", "images"),
+                "multiple_choice": os.path.join(UPLOAD_ROOT, "question", "multiple_choice", "images"),
+                "fill_blank": os.path.join(UPLOAD_ROOT, "question", "fill_blank", "images"),
+                "true_false": os.path.join(UPLOAD_ROOT, "question", "true_false", "images"),
+            },
+            "files": os.path.join(UPLOAD_ROOT, "Answer", "files"),
+        }        
+    },
     
     "sangao_admin": {
         "Question": {
-            "operation": {
-                "files": os.path.join(UPLOAD_ROOT, "question", "operation", "files"),
-                "images": os.path.join(UPLOAD_ROOT, "question", "operation", "images"),
-                "css": os.path.join(BASE_DIR, "sangao_admin", "templates", "Question", "static", "css"),
+            "files":{
+                "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "files"),
+            },
+            "images":{
+                "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "images"),
+                "single_choice": os.path.join(UPLOAD_ROOT, "Question", "single_choice", "images"),
+                "multiple_choice": os.path.join(UPLOAD_ROOT, "Question", "multiple_choice", "images"),
+                "fill_blank": os.path.join(UPLOAD_ROOT,"Question", "fill_blank", "images")
             }
         },
         "TeachExam": {

@@ -26,6 +26,7 @@ import sangao_admin.RecordController
 import sangao.RecordController
 import sangao.AnswerController
 import sangao_admin.TeachExamController
+import sangao_admin.AnswerController
 
 import myportal.common as common
 from tornado.web import StaticFileHandler
@@ -124,7 +125,8 @@ if __name__ == '__main__':
         , (r'/sangao_admin/Question/select', sangao_admin.QuestionController.selectHandler)       
         , (r'/sangao_admin/Question/index', sangao_admin.QuestionController.indexHandler)    
         , (r'/sangao_admin/Question/del', sangao_admin.QuestionController.delHandler)    
-        , (r'/sangao_admin/Question/error_question', sangao_admin.QuestionController.errorQuestionHandler)    
+        , (r'/sangao_admin/Answer/error_question', sangao_admin.AnswerController.errorQuestionHandler)    
+        , (r'/sangao_admin/Answer/index', sangao_admin.AnswerController.indexHandler) 
         , (r'/sangao_admin/Knowledge/add', sangao_admin.KnowledgeController.addHandler)    
         , (r'/sangao_admin/Knowledge/index', sangao_admin.KnowledgeController.indexHandler)         
         , (r'/sangao_admin/Question/source_add', sangao_admin.QuestionController.sourceAddHandler)     

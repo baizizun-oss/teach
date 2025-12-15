@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<title>错误率</title>
+</head>
+
+<body>
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}
+textarea{
+	width:100%;
+	}	
+</style>
+
+
+<table width="100%" border="1">
+<caption style=" font-size:50px;">
+错题排行
+</caption>
+    <tr>
+      <th scope="row">题目类型</th>
+      <th>题目id</th>
+      <th>题目内容</th>
+      <th>练习次数</th>
+      <th>错误次数</th>
+      <th>错误率</th>
+    </tr>
+  	{%for key,vo in error_ranking%}
+    <tr>
+      <td>{{vo["question_type"]}}</td>
+      <td>
+        {% set parts=key.split(":")%}
+        {{ parts[1]}}
+      </td>
+      <td>{{vo["question_title"]}}</td>
+      <td>{{vo["answer_sum"]}}</td>
+      <td>{{vo["error_sum"]}}</td>
+      <td>{{"%.2f%%" % (vo["error_sum"] / vo["answer_sum"] * 100)}}</td>
+    </tr>
+  	{%end%}
+  </table>
+</body>
+</html>

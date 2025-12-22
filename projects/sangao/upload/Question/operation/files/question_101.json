@@ -1,0 +1,20 @@
+{
+  "scoring_rules": {
+    "merged_cells": {
+      "desc": "标题是否合并居中",
+      "max_score": 2
+    },
+    "cell_values": {
+      "desc": "数据内容是否正确（含汇总行）",
+      "max_score": 5
+    },
+    "formulas": {
+      "desc": "销售金额是否使用公式计算",
+      "max_score": 5
+    },
+    "conditional_formatting": {
+      "desc": "销售数量>10是否高亮显示",
+      "max_score": 3
+    }
+  }
+}

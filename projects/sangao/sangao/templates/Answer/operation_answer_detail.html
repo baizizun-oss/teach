@@ -27,6 +27,57 @@
     color: #d32f2f;
     font-weight: bold;
   }
+  /* Excel文件样式 */
+  .excel-file-link {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  .excel-file-link:hover {
+    background-color: #45a049;
+  }
+  
+  /* 评分详情样式 */
+  .scoring-details {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  
+  .scoring-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .scoring-item:last-child {
+    border-bottom: none;
+  }
+  
+  .scoring-label {
+    font-weight: bold;
+  }
+  
+  .scoring-score {
+    color: #2196F3;
+  }
+  
+  .scoring-total {
+    font-weight: bold;
+    color: #FF5722;
+  }
+  
+  .no-scoring-details {
+    color: #999;
+    font-style: italic;
+  }
 </style>
 </head>
 
@@ -36,6 +87,13 @@ $(document).ready(function() {
 
   // === 新增：文件内容加载函数 ===
   function loadFileContent(elementId, filePath) {
+    // 检查是否为Excel文件
+    if (filePath && (filePath.endsWith('.xlsx') || filePath.endsWith('.xls'))) {
+      // 对于Excel文件，只显示下载链接
+      $(`#${elementId}`).html(`<a href="/static_operation_question_files/${filePath}" class="excel-file-link" download>下载Excel文件</a>`);
+      return;
+    }
+    
     if (!filePath) return;
     
     $(`#${elementId}`).html('<div class="code-container"><pre>加载中...</pre></div>');
@@ -54,6 +112,13 @@ $(document).ready(function() {
   }
   
   function loadUserAnswerFileContent(elementId, filePath) {
+    // 检查是否为Excel文件
+    if (filePath && (filePath.endsWith('.xlsx') || filePath.endsWith('.xls'))) {
+      // 对于Excel文件，只显示下载链接
+      $(`#${elementId}`).html(`<a href="/static_Answer_files/${filePath}" class="excel-file-link" download>下载Excel文件</a>`);
+      return;
+    }
+    
     if (!filePath) return;
     
     $(`#${elementId}`).html('<div class="code-container"><pre>加载中...</pre></div>');
@@ -72,6 +137,13 @@ $(document).ready(function() {
   }  
 
   function loadMaterialFileContent(elementId, filePath) {
+    // 检查是否为Excel文件
+    if (filePath && (filePath.endsWith('.xlsx') || filePath.endsWith('.xls'))) {
+      // 对于Excel文件，只显示下载链接
+      $(`#${elementId}`).html(`<a href="/static_Answer_files/${filePath}" class="excel-file-link" download>下载Excel文件</a>`);
+      return;
+    }
+    
     if (!filePath) return;
     
     $(`#${elementId}`).html('<div class="code-container"><pre>加载中...</pre></div>');
@@ -123,9 +195,24 @@ button{
 	width:100px;
 	height:100px;
 	}
-
-
-/* ... 其他样式保持不变 ... */
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}	
+textarea{
+	width:100%;
+	}	
 </style>
 
 <table width="100%" border="1">
@@ -144,7 +231,7 @@ button{
   <tr>
     <th scope="row">素材文件1</th>
     <td>
-      <a href="/static_operation_question_files/{{operation_answer['material']}}">{{operation_answer["material"]}}</a>
+      <a href="/static_operation_question_files/{{operation_answer['material']}}" class="excel-file-link" download>{{operation_answer["material"]}}</a>
       <div id="material_content"></div>
     </td>
   </tr> 
@@ -152,14 +239,14 @@ button{
   {% if operation_answer["material2"]!="" %} 
   <tr>
     <th scope="row">素材文件2</th>
-    <td><a href="/static_operation_question_files/{{operation_answer['material2']}}">{{operation_answer["material2"]}}</a></td>
+    <td><a href="/static_operation_question_files/{{operation_answer['material2']}}" class="excel-file-link" download>{{operation_answer["material2"]}}</a></td>
   </tr>        
   {% end %}  
   {% if operation_answer["user_answer"]!="" %} 
   <tr>
     <th scope="row">我的作答</th>
     <td>
-      <a href="/static_Answer_files/{{operation_answer['user_answer']}}">{{operation_answer["user_answer"]}}</a>
+      <a href="/static_Answer_files/{{operation_answer['user_answer']}}" class="excel-file-link" download>{{operation_answer["user_answer"]}}</a>
       <!-- 新增：文件内容展示区域 -->
       <div id="user_answer_content"></div>
     </td>
@@ -171,9 +258,51 @@ button{
     <th scope="row">标准答案</th>
     <td>
       <!-- 保留原下载链接 -->
-      <a href="/static_operation_question_files/{{operation_answer['answer']}}">{{operation_answer["answer"]}}</a>
+      <a href="/static_operation_question_files/{{operation_answer['answer']}}" class="excel-file-link" download>{{operation_answer["answer"]}}</a>
       <!-- 新增：答案内容展示区域 -->
       <div id="correct_answer_content"></div>
+    </td>
+  </tr>
+  {% end %}
+  
+  <!-- 显示评分详情 -->
+  {% if 'scoring_details' in operation_answer and operation_answer['scoring_details'] %}
+  <tr>
+    <th scope="row">评分详情</th>
+    <td>
+      <div class="scoring-details">
+        <div class="scoring-item">
+          <span class="scoring-label">评分项</span>
+          <span class="scoring-label">得分</span>
+        </div>
+        {% for key, detail in operation_answer['scoring_details'].items() %}
+          {% if key != 'total_score' and key != 'max_total_score' %}
+          <div class="scoring-item">
+            <span class="scoring-desc">{{detail['desc']}}</span>
+            <span class="scoring-score">{{'{:.1f}'.format(detail['score'])}} / {{detail['max_score']}}</span>
+          </div>
+          {% end %}
+        {% end %}
+        <div class="scoring-item">
+          <span class="scoring-label">总分</span>
+          <span class="scoring-total">{{'{:.1f}'.format(operation_answer['scoring_details']['total_score'])}} / {{operation_answer['scoring_details']['max_total_score']}}</span>
+        </div>
+      </div>
+    </td>
+  </tr>
+  {% elif operation_answer["score"] is not None %}
+  <tr>
+    <th scope="row">评分详情</th>
+    <td>
+      <div class="scoring-details">
+        <div class="scoring-item">
+          <span class="scoring-label">总分</span>
+          <span class="scoring-total">{{operation_answer["score"]}} / 15</span>
+        </div>
+        <div class="scoring-item no-scoring-details">
+          详细评分信息不可用
+        </div>
+      </div>
     </td>
   </tr>
   {% end %}

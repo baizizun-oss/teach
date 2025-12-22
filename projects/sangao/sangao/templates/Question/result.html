@@ -56,16 +56,16 @@ textarea{
       <td>&nbsp;</td>
       <td>
         <p>
-          <input type="radio" name="answer[{{vo['id']}}]" value="A">
+          <input type="radio" name="answer" value="A">
           {{vo["choice1"]}}</p>
         <p>
-          <input type="radio" name="answer[{{vo['id']}}]" value="B">
+          <input type="radio" name="answer" value="B">
           {{vo["choice2"]}}</p>
         <p>
-          <input type="radio" name="answer[{{vo['id']}}]" value="C">
+          <input type="radio" name="answer" value="C">
           {{vo["choice3"]}}</p>
         <p>
-          <input type="radio" name="answer[{{vo['id']}}]" value="D">
+          <input type="radio" name="answer" value="D">
           {{vo["choice4"]}}</p>
       </td>
     </tr>
@@ -108,8 +108,8 @@ textarea{
     <tr>
       <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
       <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_operation_question_images/{{vo['picture']}}">{% end %}</th>
-      <td>{% if vo["material"] != "" %}<a href="/static_operation_question_files/{{vo['material']}}">{{vo["material"]}} </a>{% end %}</td>
-      <td><input type="file" name="file_{{vo['id']}}"></td>
+      <td>{% if vo["material"] != "" %}素材文件：<a href="/static_operation_question_files/{{vo['material']}}">{{vo["material"]}} </a>{% end %}</td>
+      <td><input type="file" name="file"></td>
     </tr>    
     {%end%}                      
     <tr>

@@ -8,6 +8,13 @@ warnings.filterwarnings('ignore')
 import time
 import myportal.common as common
 import json
+from .QuestionModel import (
+    SingleChoiceQuestionModel,
+    MultipleChoiceQuestionModel,
+    TrueFalseQuestionModel,
+    FillBlankQuestionModel,
+    OperationQuestionModel
+)
 
 
 
@@ -134,11 +141,25 @@ class handinHandler(RequestHandler):
 
         # 评分并保存
         for qid, qtype, student_ans in answer_records:
-            correct_ans = self.get_correct_answer("sangao", qtype, qid)
+            # 使用模型层获取正确答案
+            if qtype == "single_choice":
+                correct_ans = SingleChoiceQuestionModel.get_correct_answer(qid)
+            elif qtype == "multiple_choice":
+                correct_ans = MultipleChoiceQuestionModel.get_correct_answer(qid)
+            elif qtype == "true_false":
+                correct_ans = TrueFalseQuestionModel.get_correct_answer(qid)
+            elif qtype == "fill_blank":
+                correct_ans = FillBlankQuestionModel.get_correct_answer(qid)
+            elif qtype == "operation":
+                correct_ans = OperationQuestionModel.get_correct_answer(qid)
+            else:
+                correct_ans = None
+
             if correct_ans is None:
                 logger.error(f"未找到标准答案: 题目ID={qid}, 类型={qtype}")
                 continue
 
+            # 评分逻辑保留在Controller中
             score = 0
             is_correct = 0
 
@@ -210,23 +231,8 @@ class handinHandler(RequestHandler):
         #     total_score=total_score
         # )
 
-        self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("提交成功!请去“我的作答”中查看作答情况");</script></body></html>') 
+        self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("提交成功!请去"我的作答"中查看作答情况");</script></body></html>') 
 
-
-    def get_correct_answer(self, db_name, question_type, question_id):
-        table_map = {
-            "single_choice": "single_choice_question",
-            "true_false": "tf_question",
-            "multiple_choice": "multiple_choice_question",
-            "fill_blank": "fill_blank_question",
-            "operation": "operation_question"
-        }
-        table = table_map.get(question_type)
-        if not table:
-            return None
-
-        rows = common.select(db_name, f"SELECT answer FROM {table} WHERE id ={question_id}")
-        return rows[0]["answer"] if rows and rows[0]["answer"] is not None else None
 
     def fetch_submitted_questions(self, qtype, qids):
         if not qids:
@@ -293,6 +299,7 @@ class getModuleKnowledge(tornado.web.RequestHandler):
         except Exception as e:
             self.set_header("Content-Type", "application/json; charset=utf-8")
             self.write(json.dumps({"success": False, "error": str(e)}))
+
 
 
 class changeBatchHandler(tornado.web.RequestHandler):
@@ -371,6 +378,7 @@ class changeBatchHandler(tornado.web.RequestHandler):
                     operation_questions=operation_questions,
 
                     question_type=question_type)
+
 
 
 class errorRankingHandler(tornado.web.RequestHandler):
@@ -525,6 +533,7 @@ class selectHandler(tornado.web.RequestHandler):
         ,module=data["module"]
         ,question_type=self.get_argument("type")
         ,number=data["number"]
+        ,knowledge=data["knowledge"]
         ,operation_questions=operation_questions
         ,true_false_questions=true_false_questions
         ,multiple_choice_questions=multiple_choice_questions        

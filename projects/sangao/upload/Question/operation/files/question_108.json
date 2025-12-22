@@ -1,0 +1,20 @@
+{
+  "scoring_rules": {
+    "cell_values": {
+      "desc": "每月水费、全年合计等数值是否正确",
+      "max_score": 8
+    },
+    "formulas": {
+      "desc": "水费列是否使用了正确的阶梯计费公式（如 IF 或 MIN/MAX）",
+      "max_score": 6
+    },
+    "chart": {
+      "desc": "是否包含以‘月份’为横轴、‘用水量’为纵轴的折线图",
+      "max_score": 4
+    },
+    "merged_cells": {
+      "desc": "标题区域是否合并居中（如有）",
+      "max_score": 2
+    }
+  }
+}

@@ -79,11 +79,25 @@ def execute(db_name, sql, parameters=()):
         conn.close()
 
 
-def find(db="",sql=""):
+def find(db="", sql="", parameters=()):
+    """
+    执行 SELECT 查询，返回单行结果（支持参数化查询）
+    
+    :param db: 数据库名（如 "sangao"），对应 db/{db_name}.db
+    :param sql: SQL 查询语句，使用 ? 作为占位符
+    :param parameters: 参数元组，默认为空元组
+    :return: 字典表示的一行记录，如果没有结果则返回None
+    """
     try:
-        conn = sqlite3.connect(os.path.join( "db", db + ".db"))
+        db_path = os.path.join(BASE_DIR, "db", db + ".db")
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute(sql)
+        
+        if parameters:
+            cursor.execute(sql, parameters)  # 使用参数化查询
+        else:
+            cursor.execute(sql)  # 兼容旧用法
+            
         resultset = cursor.fetchall()
         
         # 健壮性处理：空结果集直接返回None
@@ -98,8 +112,9 @@ def find(db="",sql=""):
         return None  # 异常时返回None[2](@ref)
     
     finally:
-        conn.close()  # 确保连接关闭[8](@ref)        
-    
+        conn.close()  # 确保连接关闭[8](@ref)
+
+
 def select(db="", sql="", parameters=()):
     """
     执行 SELECT 查询（支持参数化查询）

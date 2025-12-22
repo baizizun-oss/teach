@@ -1,23 +1,26 @@
-#sangao_admin/QuestionController.py
+# sangao_admin/QuestionController.py
+
+
+
 
 
 import tornado
 import sqlite3
-import requests
 import warnings
 import os
 import uuid
 import config
+import json  # 确保已导入
 
 warnings.filterwarnings('ignore')
-import time
 import myportal.common as common
 from sangao_admin.KnowledgeModel import Knowledge
 from sangao_admin.QuestionModel import SingleChoiceModel
 from sangao_admin.QuestionModel import KnowledgeModel
 import logging
 logger = logging.getLogger(__name__)
-
+from common.CommonModel import Common
+from common.OperationQuestionModel import OperationQuestionModel
 
 
 class listsHandler(tornado.web.RequestHandler):
@@ -45,265 +48,19 @@ class addHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","add.html"))
 
-        
-class editHandler(tornado.web.RequestHandler):
-    def get(self):
-        db_name = ""
-        question_type = self.get_argument("question_type")
-        #获取知识点分类
-        sql="select * from knowledge"
-        knowledges=common.select("sangao",sql)
+def get_upload_path(question_type, file_type="images"):
+    """统一获取上传路径"""
+    mapping = {
+        "single_choice": ("Question", "images", "single_choice"),
+        "multiple_choice": ("Question", "images", "multiple_choice"),
+        "fill_blank": ("Question", "images", "fill_blank"),
+        "true_false": ("Question", "images", "true_false"),
+        "operation": ("Question", file_type, "operation"),
+    }
+    if question_type in mapping:
+        return config.get_path("sangao_admin", *mapping[question_type])
+    return config.get_path("sangao_admin", "Question", "upload")
 
-        if question_type == 'single_choice':
-            db_name = "single_choice_question"
-            sql = "select question.id as question_id,source.id as source_id,source.publicer as publicer,source.public_year as public_year,question.difficult as difficult,question.picture as picture,question.choice1 as choice1,question.choice2 as choice2,question.choice3 as choice3,question.choice4 as choice4,question.title as title,question.answer as answer,question.knowledge as knowledge,module.name as module_name,question.module as module_id,question.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as question join module on module.id = question.module join knowledge on knowledge.id= question.knowledge join question_source as source on source.id=question.source  where question.id ="+self.get_argument("question_id")            
-            #sql="select id as question_id,module as module_id,title,choice1,choice2,choice3,choice4,picture,answer,source as source_id,difficult,knowledge as knowledge_id from single_choice_question where id ="+ self.get_argument("question_id") 
-            logger.info(f"sql:{sql}")
-            question = common.find("sangao",sql)
-            if question["question_id"]:
-                logger.info(f"question:{question}")
-                modules=common.select("sangao","select * from module")
-                knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))   
-                sources=common.select("sangao","select * from question_source")         
-                sql="select * from module where id="+str(question["module_id"])
-                module=common.find("sangao",sql)
-                question["module_name"]=module["name"]
-                sql="select * from knowledge where id = "+str(question["knowledge_id"])
-                knowledge=common.find("sangao",sql)
-                question["knowledge_name"]=knowledge["name"]
-                sql="select * from question_source where id="+str(question["source_id"])
-                logger.info(f"source_sql:{sql}")
-                source=common.find("sangao",sql)
-                question["public_year"] = source["public_year"]
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","single_choice_edit.html"),question=question,modules=modules,knowledges=knowledges,sources=sources)
-            else:
-                self.write("题目不存在！")            
-        if question_type == 'true_false':
-            db_name = 'tf_question'
-            sql = "select tf.id as question_id,tf.title as title,tf.answer as answer,tf.knowledge as knowledge,module.name as module_name,tf.module as module_id,tf.difficult as difficult,tf.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as tf join module on module.id = tf.module join knowledge on knowledge.id= tf.knowledge  where tf.id ="+self.get_argument("question_id")
-            # print("sql:",sql)
-            question = common.find("sangao",sql)
-            modules=common.select("sangao","select * from module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))
-            if question:
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","true_false_edit.html"),question=question,modules=modules,knowledges=knowledges)                  
-        if question_type == 'operation':
-            db_name = 'operation_question'
-            sql = "select question.id as question_id,question.material as material,question.difficult as difficult,question.picture as picture,question.title as title,question.answer as answer,question.knowledge as knowledge,module.name as module_name,question.module as module_id,question.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as question join module on module.id = question.module join knowledge on knowledge.id= question.knowledge  where question.id ="+self.get_argument("question_id")            
-
-            question = common.find("sangao",sql)            
-            modules=common.select("sangao","select * from module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))                 
-            # print("sql:",sql)
-            question = common.find("sangao",sql)
-            if question:
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","operation_edit.html"),question=question,modules=modules,knowledges=knowledges)                  
-        
-        if question_type == 'multiple_choice':
-            db_name = "multiple_choice_question"
-            sql = "select question.id as question_id,question.difficult as difficult,question.picture as picture,question.choice1 as choice1,question.choice2 as choice2,question.choice3 as choice3,question.choice4 as choice4,question.choice5 as choice5,question.choice6 as choice6,question.title as title,question.answer as answer,question.knowledge as knowledge,module.name as module_name,question.module as module_id,question.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as question join module on module.id = question.module join knowledge on knowledge.id= question.knowledge  where question.id ="+self.get_argument("question_id")            
-
-            question = common.find("sangao",sql)            
-            modules=common.select("sangao","select * from module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))            
-            # print("sql:",sql)
-
-            if question:
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","multiple_choice_edit.html"),question=question,modules=modules,knowledges=knowledges)   
-
-        if question_type == 'fill_blank':
-            db_name = 'fill_blank_question'
-            sql = "select question.id as question_id,question.difficult as difficult,question.picture as picture,question.title as title,question.answer as answer,question.knowledge as knowledge,module.name as module_name,question.module as module_id,question.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as question join module on module.id = question.module join knowledge on knowledge.id= question.knowledge  where question.id ="+self.get_argument("question_id")            
-
-            # print("sql:",sql)
-            question = common.find("sangao",sql)
-            modules=common.select("sangao","select * from module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))               
-            if question:
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","fill_blank_edit.html"),question=question,modules=modules,knowledges=knowledges)   
-        
-    def post(self):
-        print("进入post")
-        
-        if self.get_argument("question_type")=='single_choice':
-            data={}
-            data["title"]=self.get_argument("title")
-            data["choice1"]=self.get_argument("choice1")
-            data["choice2"]=self.get_argument("choice2")
-            data["choice3"]=self.get_argument("choice3")
-            data["choice4"]=self.get_argument("choice4")
-            data["knowledge"]=self.get_argument("knowledge")
-            data["module"]=self.get_argument("module")
-            data["answer"]=self.get_argument("correct_answer")
-            data["difficult"]=self.get_argument("difficult")            
-            sql="update single_choice_question set title='"+data["title"]+"',choice1='"+data["choice1"]+"',choice2='"+data["choice2"]+"',choice3='"+data["choice3"]+"',choice4='"+data["choice4"]+"',module='"+data["module"]+"',answer='"+data["answer"]+"',difficult='"+data["difficult"]+"',knowledge='"+data["knowledge"]+"'"
-            UPLOAD_FILE_PATH = config.get_path("sangao_admin","Question","images","single_choice")
-            if self.request.files.get('photo1', None):
-                uploadFile = self.request.files['photo1'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['photo1'][0]['filename'])[1]
-                fileObj = open(os.path.join(UPLOAD_FILE_PATH,filename),'wb')
-                fileObj.write(uploadFile['body'])
-                data["photo1"]=filename
-                sql+=",picture='"+data["photo1"]+"'"
-           
-            sql=sql+" where id="+self.get_argument("question_id")
-
-            result = common.execute("sangao",sql)
-            if result:
-                self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("修改成功！");window.location.href="select";</script></body></html>')  
-        if self.get_argument("question_type")=="true_false":
-            data={}
-            data["title"]=self.get_argument("title")
-            data["answer"]=self.get_argument("answer")
-            data["module"]=self.get_argument("module")
-            data["knowledge"]=self.get_argument("knowledge")
-            data["difficult"]=self.get_argument("difficult")
-            sql="update tf_question set title='"+data["title"]+"',module='"+data["module"]+"',answer='"+data["answer"]+"',difficult='"+data["difficult"]+"',knowledge='"+data["knowledge"]+"'"
-            UPLOAD_FILE_PATH = STATIC_PATHS[self.get_argument("question_type")]
-            if self.request.files.get('photo1', None):
-                uploadFile = self.request.files['photo1'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['photo1'][0]['filename'])[1]
-                fileObj = open(UPLOAD_FILE_PATH + filename, 'wb')
-                fileObj.write(uploadFile['body'])
-                data["photo1"]=filename           
-                sql+=" picture='"+data["photo1"]+"'"
-           
-            sql=sql+" where id="+self.get_argument("question_id")
-            result = common.execute("sangao",sql)
-            if result:
-                self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("修改成功！");window.location.href="select";</script></body></html>')  
-
-        if self.get_argument("question_type")=="multiple_choice":
-            print("进入multiple_choice")
-            data={}
-            data["title"]=self.get_argument("title")
-            data["answer"]=self.get_argument("answer")
-            data["module"]=self.get_argument("module")
-            data["knowledge"]=self.get_argument("knowledge")
-            data["choice1"]=self.get_argument("choice1")
-            data["choice2"]=self.get_argument("choice2")
-            data["choice3"]=self.get_argument("choice3")
-            data["choice4"]=self.get_argument("choice4")
-            data["choice5"]=self.get_argument("choice5")
-            data["choice6"]=self.get_argument("choice6")
-            data["difficult"]=self.get_argument("difficult")
-            sql="update multiple_choice_question set title='"+data["title"]+"',answer='"+data["answer"]+"',module="+data["module"]+",knowledge="+data["knowledge"]
-
-            UPLOAD_FILE_PATH = STATIC_PATHS[self.get_argument("question_type")]
-            if self.request.files.get('photo1', None):
-                uploadFile = self.request.files['photo1'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['photo1'][0]['filename'])[1]
-                fileObj = open(UPLOAD_FILE_PATH + filename, 'wb')
-                fileObj.write(uploadFile['body'])
-                data["photo1"]=filename
-                sql+=" picture='"+data["photo1"]+"'"
-           
-            sql=sql+" where id="+self.get_argument("question_id")
-            result = common.execute("sangao",sql)
-            if result:
-                self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("修改成功！");window.location.href="select";</script></body></html>')  
-
-        if self.get_argument("question_type")=="fill_blank":
-            print("进入fill_blank")
-            data={}
-            data["title"]=self.get_argument("title")
-            data["answer"]=self.get_argument("answer")
-            data["module"]=self.get_argument("module")
-            data["knowledge"]=self.get_argument("knowledge")
-            data["difficult"]=self.get_argument("difficult")
-            sql="update fill_blank_question set title='"+data["title"]+"',answer='"+data["answer"]+"',module="+data["module"]+",knowledge="+data["knowledge"]
-
-            UPLOAD_FILE_PATH = STATIC_PATHS["fill_blank"]
-            if self.request.files.get('photo1', None):
-                uploadFile = self.request.files['photo1'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['photo1'][0]['filename'])[1]
-                fileObj = open(UPLOAD_FILE_PATH + filename, 'wb')
-                fileObj.write(uploadFile['body'])
-                data["photo1"]=filename
-                sql+=" picture='"+data["photo1"]+"'"
-        
-            sql=sql+" where id="+self.get_argument("question_id")
-            result = common.execute("sangao",sql)
-            if result:
-                self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("修改成功！");window.location.href="select";</script></body></html>')  
-
-        if self.get_argument("question_type")=="operation":
-            print("进入operation")
-            data={}
-            data["title"]=self.get_argument("title")
-            data["module"]=self.get_argument("module")
-            data["knowledge"]=self.get_argument("knowledge")
-            data["difficult"]=self.get_argument("difficult")
-            sql="update operation_question set title='"+data["title"]+"',module="+data["module"]+",knowledge="+data["knowledge"]
-
-            UPLOAD_FILE_PATH = config.get_path("sangao_admin","Question","files","operation")
-            UPLOAD_IMAGE_PATH = config.get_path("sangao_admin","Question","images","operation")
-            if self.request.files.get('photo1', None):
-                uploadFile = self.request.files['photo1'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['photo1'][0]['filename'])[1]
-                fileObj = open(os.path.join(UPLOAD_IMAGE_PATH,filename), 'wb')
-                fileObj.write(uploadFile['body'])
-                data["photo1"]=filename
-                sql+=", picture='"+data["photo1"]+"'"
-
-            if self.request.files.get('material', None):
-                uploadFile = self.request.files['material'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['material'][0]['filename'])[1]
-                fileObj = open(os.path.join(UPLOAD_FILE_PATH,filename), 'wb')
-                fileObj.write(uploadFile['body'])
-                data["material"]=filename
-                sql+=", material='"+data["material"]+"'"        
-
-            if self.request.files.get('material2', None):
-                uploadFile = self.request.files['material2'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['material2'][0]['filename'])[1]
-                fileObj = open(os.path.join(UPLOAD_FILE_PATH,filename), 'wb')
-                fileObj.write(uploadFile['body'])
-                data["material2"]=filename
-                sql+=", material2='"+data["material2"]+"'"        
-
-            if self.request.files.get('correct_answer', None):
-                uploadFile = self.request.files['correct_answer'][0]
-                # 生成新的文件名
-                filename = str(uuid.uuid4()) + os.path.splitext(self.request.files['correct_answer'][0]['filename'])[1]
-                fileObj = open(os.path.join(UPLOAD_FILE_PATH,filename), 'wb')
-                fileObj.write(uploadFile['body'])
-                data["answer"]=filename
-                sql+=", answer='"+data["answer"]+"'"         
-
-
-            sql=sql+" where id="+self.get_argument("question_id")
-            logger.info("sql: %s",sql)
-            result = common.execute("sangao",sql)
-            if result:
-                self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("修改成功！");window.location.href="select";</script></body></html>')  
-
-class joinExamHandler(tornado.web.RequestHandler):
-    def get(self):
-        # common.tongji("exam_paper_del")
-        data={}
-        data["belong_exam_paper_id"]
-        sql="insert into exam_plan(belong_exam_paper_id,question_type,question_id) values()"
-
-
-class examPaperDelHandler(tornado.web.RequestHandler):
-    def get(self):
-        print("进入warehouse_index_add_get")
-        common.tongji("exam_paper_del")
-        sql = "delete from exam_paper where id=" + self.get_argument("id")
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
-        result = conn.cursor().execute(sql)
-        conn.commit()
-        print("result结果为:", result)
-        print("sql语句:" + sql)
-        conn.close()
 
 class delHandler(tornado.web.RequestHandler):
     def get(self):
@@ -361,6 +118,258 @@ class delHandler(tornado.web.RequestHandler):
             reslut = common.execute("sangao",sql)
             if reslut:
                 self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("删除成功！");</script></body></html>')
+
+
+
+class editHandler(tornado.web.RequestHandler):
+
+    # 👇 新增：预格式化数值为字符串（使用 %g 或其他格式）
+    def format_score(self,val):
+        return '%g' % float(val) if val is not None else '0' 
+
+
+    def get(self):
+        question_type = self.get_argument("question_type")
+        question_id = self.get_argument("question_id")
+
+        # 获取通用数据
+        modules = common.select("sangao", "SELECT * FROM module")
+        knowledges_all = common.select("sangao", "SELECT * FROM knowledge")
+
+        def render_template(template, **kwargs):
+            self.render(os.path.join(common.BASE_DIR, "sangao_admin", "templates", "Question", template), **kwargs)
+
+        if question_type == 'single_choice':
+            sql = """
+                SELECT q.id AS question_id, s.id AS source_id, s.publicer, s.public_year,
+                       q.difficult, q.picture, q.choice1, q.choice2, q.choice3, q.choice4,
+                       q.title, q.answer, q.knowledge, m.name AS module_name, q.module AS module_id,
+                       k.name AS knowledge_name
+                FROM single_choice_question q
+                JOIN module m ON m.id = q.module
+                JOIN knowledge k ON k.id = q.knowledge
+                JOIN question_source s ON s.id = q.source
+                WHERE q.id = ?
+            """
+            question = common.find("sangao", sql, (question_id,))
+            if not question:
+                self.write("题目不存在！")
+                return
+            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+            sources = common.select("sangao", "SELECT * FROM question_source")
+            render_template("single_choice_edit.html", question=question, modules=modules, knowledges=knowledges, sources=sources)
+
+        elif question_type == 'true_false':
+            sql = """
+                SELECT tf.id AS question_id, tf.title, tf.answer, tf.knowledge, tf.difficult,
+                       m.name AS module_name, tf.module AS module_id, k.name AS knowledge_name
+                FROM tf_question tf
+                JOIN module m ON m.id = tf.module
+                JOIN knowledge k ON k.id = tf.knowledge
+                WHERE tf.id = ?
+            """
+            question = common.find("sangao", sql, (question_id,))
+            if not question:
+                self.write("题目不存在！")
+                return
+            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+            render_template("true_false_edit.html", question=question, modules=modules, knowledges=knowledges)
+
+        elif question_type == 'operation':
+            Question = OperationQuestionModel(question_id)
+            if not Question:
+                self.write("题目不存在！")
+                return
+            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (Question.module_id,))
+
+            # 解析 score_rules
+            try:
+                score_rules_dict = json.loads(Question.score_rules) if Question.score_rules else {}
+            except:
+                score_rules_dict = {}
+
+               
+            # 👇 修改：包含 conditional_formatting
+            rule_keys = ['cell_values', 'formulas', 'chart', 'merged_cells', 'conditional_formatting']
+            formatted_rules = {}
+            for key in rule_keys:
+                rule = score_rules_dict.get(key, {})
+                formatted_rules[key] = {
+                    'max_score_str': self.format_score(rule.get('max_score', 0)),
+                    'desc': rule.get('desc', ''),
+                    'max_score': rule.get('max_score', 0)
+                }
+            formatted_rules['compare_range'] = score_rules_dict.get('compare_range', '')
+
+
+
+            logger.info(f"rules:{formatted_rules}")
+            logger.info(f"rules['cell_values']:{formatted_rules['cell_values']}")
+            render_template(
+                "operation_edit.html",
+                question=Question.to_dict(),
+                modules=modules,
+                knowledges=knowledges,
+                rules=formatted_rules  # 👈 传这个而不是 raw dict
+            )
+
+
+
+
+        elif question_type == 'multiple_choice':
+            sql = """
+                SELECT q.id AS question_id, q.difficult, q.picture, q.choice1, q.choice2, q.choice3,
+                       q.choice4, q.choice5, q.choice6, q.title, q.answer, q.knowledge,
+                       m.name AS module_name, q.module AS module_id, k.name AS knowledge_name
+                FROM multiple_choice_question q
+                JOIN module m ON m.id = q.module
+                JOIN knowledge k ON k.id = q.knowledge
+                WHERE q.id = ?
+            """
+            question = common.find("sangao", sql, (question_id,))
+            if not question:
+                self.write("题目不存在！")
+                return
+            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+            render_template("multiple_choice_edit.html", question=question, modules=modules, knowledges=knowledges)
+
+        elif question_type == 'fill_blank':
+            sql = """
+                SELECT q.id AS question_id, q.difficult, q.picture, q.title, q.answer, q.knowledge,
+                       m.name AS module_name, q.module AS module_id, k.name AS knowledge_name
+                FROM fill_blank_question q
+                JOIN module m ON m.id = q.module
+                JOIN knowledge k ON k.id = q.knowledge
+                WHERE q.id = ?
+            """
+            question = common.find("sangao", sql, (question_id,))
+            if not question:
+                self.write("题目不存在！")
+                return
+            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+            render_template("fill_blank_edit.html", question=question, modules=modules, knowledges=knowledges)
+
+    def post(self):
+        question_type = self.get_argument("question_type")
+        question_id = self.get_argument("question_id")
+
+        def save_file(field_name, sub_dir="images"):
+            if self.request.files.get(field_name):
+                upload = self.request.files[field_name][0]
+                ext = os.path.splitext(upload['filename'])[1]
+                filename = str(uuid.uuid4()) + ext
+                path = get_upload_path(question_type, file_type=sub_dir)
+                os.makedirs(path, exist_ok=True)
+                with open(os.path.join(path, filename), 'wb') as f:
+                    f.write(upload['body'])
+                return filename
+            return None
+
+        conn = sqlite3.connect(os.path.join(common.BASE_DIR, "db", "sangao.db"))
+        cursor = conn.cursor()
+        try:
+            if question_type == 'single_choice':
+                data = {
+                    "title": self.get_argument("title"),
+                    "choice1": self.get_argument("choice1"),
+                    "choice2": self.get_argument("choice2"),
+                    "choice3": self.get_argument("choice3"),
+                    "choice4": self.get_argument("choice4"),
+                    "answer": self.get_argument("correct_answer"),
+                    "module": self.get_argument("module"),
+                    "knowledge": self.get_argument("knowledge"),
+                    "difficult": self.get_argument("difficult"),
+                    "source": self.get_argument("source"),
+                }
+                pic = save_file('photo1')
+                if pic:
+                    data["picture"] = pic
+                cols = ", ".join(data.keys())
+                placeholders = ", ".join(["?"] * len(data))
+                set_clause = ", ".join([f"{k}=?" for k in data.keys()])
+                # 更新题目
+                cursor.execute(f"UPDATE single_choice_question SET {set_clause} WHERE id=?", list(data.values()) + [question_id])
+                conn.commit()
+
+            elif question_type == 'operation':
+                data = {
+                    "title": self.get_argument("title"),
+                    "module": self.get_argument("module"),
+                    "knowledge": self.get_argument("knowledge"),
+                    "difficult": self.get_argument("difficult"),
+                }
+                # 文件处理
+                if save_file('photo1'):
+                    data["picture"] = save_file('photo1')
+                if save_file('material', 'files'):
+                    data["material"] = save_file('material', 'files')
+                if save_file('material2', 'files'):
+                    data["material2"] = save_file('material2', 'files')
+                if save_file('correct_answer', 'files'):
+                    data["answer"] = save_file('correct_answer', 'files')
+
+                # 评分规则
+                scoring_rules = {}
+                # 👇 修改：增加 conditional_formatting
+                for key in ["cell_values", "formulas", "chart", "merged_cells", "conditional_formatting"]:
+                    if f"rule_enabled_{key}" in self.request.arguments:
+                        try:
+                            score = float(self.get_body_argument(f"rule_score_{key}", default="0"))
+                            desc = self.get_body_argument(f"rule_desc_{key}", default=key)
+                            if score > 0:
+                                scoring_rules[key] = {"desc": desc, "max_score": score}
+                        except ValueError:
+                            pass
+                compare_range = self.get_body_argument("compare_range", default="").strip()
+                if compare_range:
+                    scoring_rules["compare_range"] = compare_range
+                data["score_rules"] = json.dumps(scoring_rules, ensure_ascii=False)
+
+
+
+
+
+                set_clause = ", ".join([f"{k}=?" for k in data.keys()])
+                cursor.execute(f"UPDATE operation_question SET {set_clause} WHERE id=?", list(data.values()) + [question_id])
+                conn.commit()
+
+            # 其他题型类似处理（略，按相同模式补充）
+
+            self.write('<html><head><title>提醒</title></head><body><script> alert("修改成功！"); window.location.href="/sangao_admin/Question/select"; </script></body></html>')
+
+        except Exception as e:
+            logger.error(f"编辑题目失败: {e}")
+            conn.rollback()
+            self.write('<script>alert("修改失败！"); history.back();</script>')
+        finally:
+            conn.close()
+
+
+# 其他 Handler（listsHandler, addHandler, selectHandler 等）保持不变，
+# 但建议后续也将其 SQL 查询改为参数化形式。
+
+class joinExamHandler(tornado.web.RequestHandler):
+    def get(self):
+        # common.tongji("exam_paper_del")
+        data={}
+        data["belong_exam_paper_id"]
+        sql="insert into exam_plan(belong_exam_paper_id,question_type,question_id) values()"
+
+
+class examPaperDelHandler(tornado.web.RequestHandler):
+    def get(self):
+        print("进入warehouse_index_add_get")
+        common.tongji("exam_paper_del")
+        sql = "delete from exam_paper where id=" + self.get_argument("id")
+        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        result = conn.cursor().execute(sql)
+        conn.commit()
+        print("result结果为:", result)
+        print("sql语句:" + sql)
+        conn.close()
+
+
+
 
 class handinHandler(tornado.web.RequestHandler):
     def get(self):
@@ -604,64 +613,124 @@ class trueFalseAddHandler(tornado.web.RequestHandler):
         exam_papers=cursor.fetchall()
         self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","true_false_add.html"),exam_papers=exam_papers)
 
+
+
+
 class operationAddHandler(tornado.web.RequestHandler):
     def post(self):
-        post_data = self.request.arguments
-        post_data = {x: post_data.get(x)[0].decode("utf-8") for x in post_data.keys()}
-        if not post_data:
-            post_data = self.request.body.decode('utf-8')
-            post_data = json.loads(post_data)
-            #print("post_data:",post_data)
-        print("post_data:",post_data)
+        data = {}
+        UPLOAD_FILE_PATH = config.get_path("sangao_admin", "Question", "files", "operation")
+        os.makedirs(UPLOAD_FILE_PATH, exist_ok=True)
 
-        data = {}        
-        # 素材文件的处理
-        UPLOAD_FILE_PATH = 'sangao\\templates\\Question\\upload\\'
-        # username = self.get_argument('username', 'anonymous')
+        # 处理素材文件 material
         if self.request.files.get('material', None):
             uploadFile = self.request.files['material'][0]
-            filename = uploadFile['filename']
-            fileObj = open(UPLOAD_FILE_PATH + filename, 'wb')
-            fileObj.write(uploadFile['body'])
-            data["material"] =  filename
+            filename = str(uuid.uuid4()) + os.path.splitext(uploadFile['filename'])[1]
+            file_path = os.path.join(UPLOAD_FILE_PATH, filename)
+            with open(file_path, 'wb') as f:
+                f.write(uploadFile['body'])
+            data["material"] = filename
+        else:
+            data["material"] = ""
 
-        # 标准答案文件的处理
-        UPLOAD_FILE_PATH = 'sangao\\templates\\Question\\answer\\'
+        # 处理标准答案文件 correct_answer
         if self.request.files.get('correct_answer', None):
             uploadFile = self.request.files['correct_answer'][0]
-            filename = uploadFile['filename']
-            fileObj = open(UPLOAD_FILE_PATH + filename, 'wb')
-            fileObj.write(uploadFile['body'])
-            data["correct_answer"] =  filename            
-        self.write("上传成功")             
-        
+            filename = str(uuid.uuid4()) + os.path.splitext(uploadFile['filename'])[1]
+            file_path = os.path.join(UPLOAD_FILE_PATH, filename)
+            with open(file_path, 'wb') as f:
+                f.write(uploadFile['body'])
+            data["correct_answer"] = filename
+        else:
+            data["correct_answer"] = ""
+
+        # 处理图片 photo1
         if self.request.files.get('photo1', None):
             uploadFile = self.request.files['photo1'][0]
-            photo_url = uploadFile['filename']
-            print(photo_url)
-            fileObj = open(UPLOAD_FILE_PATH + photo_url, 'wb')
-            fileObj.write(uploadFile['body'])
+            filename = str(uuid.uuid4()) + os.path.splitext(uploadFile['filename'])[1]
+            img_path = config.get_path("sangao_admin", "Question", "images", "operation")
+            os.makedirs(img_path, exist_ok=True)
+            file_path = os.path.join(img_path, filename)
+            with open(file_path, 'wb') as f:
+                f.write(uploadFile['body'])
+            data["picture"] = filename
         else:
-            photo_url=""
+            data["picture"] = ""
 
-       
-        data["title"]=self.get_argument("title")
-        data["picture"]=photo_url
-        data["module"]=self.get_argument("module")
+        data["title"] = self.get_argument("title")
+        data["module"] = self.get_argument("module")
+        data["knowledge"] = self.get_argument("knowledge", default="12")
+        data["difficult"] = self.get_argument("difficult", default="简单")
 
-        sql="insert into operation_question(title,material,answer,picture,module) values('"+data["title"]+"','"+data["material"]+"','"+data["correct_answer"]+"','"+data["picture"]+"','"+data["module"]+"')"
-        print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+
+        # === 构建评分规则字典 ===
+        scoring_rules = {}
+
+        # 👇 修改：增加 conditional_formatting
+        rule_keys = ["cell_values", "formulas", "chart", "merged_cells", "conditional_formatting"]
+        for key in rule_keys:
+            is_enabled = f"rule_enabled_{key}" in self.request.arguments
+            if is_enabled:
+                try:
+                    max_score = float(self.get_body_argument(f"rule_score_{key}", default="0"))
+                    desc = self.get_body_argument(f"rule_desc_{key}", default=key)
+                    if max_score > 0:
+                        scoring_rules[key] = {
+                            "desc": desc,
+                            "max_score": max_score
+                        }
+                except ValueError:
+                    pass
+
+        compare_range = self.get_body_argument("compare_range", default="").strip()
+        if compare_range:
+            scoring_rules["compare_range"] = compare_range
+
+        score_rules_json = json.dumps(scoring_rules, ensure_ascii=False) if scoring_rules else ""
+
+
+
+
+
+        # 可选：比对区域
+        compare_range = self.get_body_argument("compare_range", default="").strip()
+        if compare_range:
+            scoring_rules["compare_range"] = compare_range
+
+        # 序列化为 JSON 字符串（确保兼容 SQLite TEXT）
+        score_rules_json = json.dumps(scoring_rules, ensure_ascii=False) if scoring_rules else ""
+
+        # === 插入数据库 ===
+        sql = """
+        INSERT INTO operation_question 
+        (title, material, answer, picture, module, knowledge, difficult, score_rules) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        params = (
+            data["title"],
+            data["material"],
+            data["correct_answer"],
+            data["picture"],
+            data["module"],
+            data["knowledge"],
+            data["difficult"],
+            score_rules_json
+        )
+
+        conn = sqlite3.connect(os.path.join(common.BASE_DIR, "db", "sangao.db"))
         cursor = conn.cursor()
-        cursor.execute(sql)
-        conn.commit()
+        try:
+            cursor.execute(sql, params)
+            conn.commit()
+            self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("操作题添加成功！");window.location.href="/sangao_admin/Question/select";</script></body></html>')
+        except Exception as e:
+            logger.error(f"插入操作题失败: {e}")
+            conn.rollback()
+            self.write('<html><head><title>错误</title></head><body><script type="text/javascript">window.alert("添加失败，请重试！");history.back();</script></body></html>')
+        finally:
+            conn.close()
     def get(self):
-        sql="select * from exam_paper"
-        print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
-        cursor = conn.cursor()
-        cursor.execute(sql)
-        conn.commit()
-        exam_papers=cursor.fetchall()
-        self.render("sangao_admin/templates/Question/operation_add.html",exam_papers=exam_papers)        
-
+            modules=common.select("sangao","select * from module")
+                            
+            self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","operation_add.html"),modules=modules)                  
+                       

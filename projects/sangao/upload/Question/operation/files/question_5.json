@@ -1,0 +1,9 @@
+{
+  "scoring_rules": {
+    "merged_cells": {"desc": "合并单元格一致性", "max_score": 2},
+    "cell_values": {"desc": "单元格值一致性", "max_score": 3},
+    "formulas": {"desc": "公式/函数一致性", "max_score": 5},
+    "conditional_formatting": {"desc": "条件格式（颜色）一致性", "max_score": 2},
+    "chart": {"desc": "图表一致性", "max_score": 3}
+  }
+}

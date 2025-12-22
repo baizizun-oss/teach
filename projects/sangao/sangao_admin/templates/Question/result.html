@@ -92,7 +92,7 @@ textarea{
     {%for vo in operation_questions%}
     <tr>
       <th scope="row">第{{vo["id"]}}题<input hidden="" type="text" name="question_id" value="{{vo['id']}}"></th>
-      <th scope="row">{{vo["title"]}}{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_operation_question_images/{{vo['picture']}}">{% end %}</th>
+      <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_operation_question_images/{{vo['picture']}}">{% end %}</th>
       <td>{% if vo["material"] != "" %} <span>文件1</span><a href="/static_operation_question_files/{{vo['material']}}">{{vo["material"]}}</a>{% end %}
         {% if vo["material2"] != "" %}<span>文件2</span><a href="/static_operation_question_files/{{vo['material2']}}">{{vo["material2"]}}</a>{% end %}</td>
       <td><input type="file" name="file"></td>

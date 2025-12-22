@@ -3,44 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
-
 <title>添加操作试题</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+tr {
+  height: auto; /* 改为 auto，避免大行高 */
+  font-size: 16px;
+}
+th {
+  text-align: right;
+  padding-right: 10px;
+}
+td {
+  padding: 8px;
+}
+input[type="text"], select, textarea {
+  width: 100%;
+  padding: 6px;
+  font-size: 16px;
+}
+input[type="file"] {
+  width: 100%;
+}
+input[type="submit"] {
+  width: 100%;
+  height: 60px;
+  font-size: 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.scoring-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+.scoring-item label {
+  min-width: 120px;
+}
+.scoring-item input[type="number"] {
+  width: 80px;
+}
+.scoring-item input[type="text"] {
+  width: 200px;
+}
+</style>
 </head>
 
 <body>
-<style>
-tr{
-	height:200px;
-	font-size:48px;
-	}
-button{
-	width:100px;
-	height:100px;
-	}
-input{
-	width:50px;
-	height:50px;
-	}
-input[type="submit"]{
-	width:200px; 
-	height:300px; 
-	font-size:36px;
-	}
-input[type="text"]{
-	width:80%;
-	}
-input[type="file"]{
-	width:100%;
-	}
-textarea{
-	width:100%;
-	}	
-</style>
+
 <form action="operation_add" method="post" enctype="multipart/form-data" name="add_form" target="_self">
-  <table width="100%" border="1">
+  <table width="100%" border="1" style="border-collapse: collapse;">
     <tr>
       <th scope="row">题目</th>
-      <td><input type="text" name="title"></td>
+      <td><input type="text" name="title" required></td>
     </tr>
     <tr>
       <th scope="row">图片1</th>
@@ -65,28 +84,111 @@ textarea{
     <tr>
       <th>所属模块</th>
       <td>
-        <select name="module">
-          <option value="python">python</option>
-          <option value="网络">网络</option>
-          <option value="软硬件">软硬件</option>
-          <option value="数据和信息">数据和信息</option>
-          <option value="数据处理和应用">数据处理和应用	</option>
-          <option value="人工智能">人工智能</option>
-          <option value="信息素质">信息素质</option>
-          <option value="认识信息社会">认识信息社会</option>
-          <option value="认识信息系统">初识信息系统</option>
+        <select name="module" id="module" required>
+          <option value="">请选择模块</option>
+          {% for module in modules %}
+            <option value="{{module['id']}}">{{module["name"]}}</option>
+          {% end %}
         </select>
       </td>
     </tr>
     <tr>
       <th scope="row">标准答案文件</th>
-      <td><input type="file" name="correct_answer" class="file"></td>
+      <td><input type="file" name="correct_answer" class="file" required></td>
     </tr>
+
+    <!-- 评分规则配置 -->
+    <tr>
+      <th scope="row">评分规则配置</th>
+      <td>
+        <div class="scoring-item">
+          <label>
+            <input type="checkbox" name="rule_enabled_cell_values" value="1" checked>
+            单元格值比对
+          </label>
+          <input type="number" name="rule_score_cell_values" value="8" min="0" step="0.1"> 分
+          <input type="text" name="rule_desc_cell_values" value="数据内容是否正确">
+        </div>
+        <div class="scoring-item">
+          <label>
+            <input type="checkbox" name="rule_enabled_formulas" value="1" checked>
+            公式比对
+          </label>
+          <input type="number" name="rule_score_formulas" value="6" min="0" step="0.1"> 分
+          <input type="text" name="rule_desc_formulas" value="是否使用公式计算">
+        </div>
+        <div class="scoring-item">
+          <label>
+            <input type="checkbox" name="rule_enabled_chart" value="1" checked>
+            图表
+          </label>
+          <input type="number" name="rule_score_chart" value="4" min="0" step="0.1"> 分
+          <input type="text" name="rule_desc_chart" value="是否包含折线图">
+        </div>
+        <div class="scoring-item">
+          <label>
+            <input type="checkbox" name="rule_enabled_merged_cells" value="1">
+            合并单元格
+          </label>
+          <input type="number" name="rule_score_merged_cells" value="0" min="0" step="0.1"> 分
+          <input type="text" name="rule_desc_merged_cells" value="标题是否合并居中">
+        </div>
+        <div class="scoring-item">
+          <label>
+            <input type="checkbox" name="rule_enabled_conditional_formatting" value="1">
+            条件格式
+          </label>
+          <input type="number" name="rule_score_conditional_formatting" value="2" min="0" step="0.1"> 分
+          <input type="text" name="rule_desc_conditional_formatting" value="条件格式是否正确应用">
+        </div>        
+        <div class="scoring-item">
+          <label>比对区域（可选）</label>
+          <input type="text" name="compare_range" placeholder="如 A1:D20，留空则全表比对">
+        </div>
+      </td>
+    </tr>
+
     <tr>
       <th scope="row">&nbsp;</th>
-      <td><input type="submit" value="提交"></td>
+      <td><input type="submit" value="提交试题"></td>
     </tr>
   </table>
 </form>
+
+<script>
+$(document).ready(function() {
+  $('#module').change(function() {
+    const module = $(this).val();
+    const $kpSelect = $('#knowledge');
+
+    if (module) {
+      $kpSelect.empty().prop('disabled', true).append('<option>加载中...</option>');
+      $.get('/sangao/Question/get_module_knowledge', { module: module })
+        .done(function(data) {
+          $kpSelect.empty().prop('disabled', false);
+          $kpSelect.append('<option value="12">暂未纳入</option>');
+          data.forEach(item => {
+            $kpSelect.append(`<option value="${item.id}">${item.name}</option>`);
+          });
+        })
+        .fail(function() {
+          $kpSelect.empty().prop('disabled', true).append('<option>加载失败</option>');
+        });
+    } else {
+      $kpSelect.empty().prop('disabled', true).append('<option>请先选择模块</option>');
+    }
+  });
+
+  // 可选：当取消勾选时，自动清空分数（非必须）
+  $('input[name="rule_enabled"]').change(function() {
+    const value = $(this).val();
+    const scoreInput = $(`input[name="rule_score_${value}"]`);
+    if (!$(this).is(':checked')) {
+      scoreInput.val(0);
+    }
+  });
+});
+</script>
+
 </body>
 </html>

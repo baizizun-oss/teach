@@ -1,111 +1,139 @@
 # projects/deploy_sangao.py
 import os
-import yaml
-import subprocess
-from common.utils import run_cmd
-from services.install_docker import install_docker
+import sys
+import shutil
+from pathlib import Path
 
-# === 阿里云 CR 配置（仅用于个人环境）===
-ALIYUN_CR_REGISTRY = "crpi-3lvooynrry6ot6hx.cn-hangzhou.personal.cr.aliyuncs.com"
-ALIYUN_CR_USERNAME = "special198412@hotmail.com"
-ALIYUN_CR_PASSWORD = "founder#021665"
-PRIVATE_UBUNTU_IMAGE = f"{ALIYUN_CR_REGISTRY}/baigaopeng/ubuntu:20.04"
-TARGET_BASE_IMAGE = "ubuntu:20.04"
-
-
-def ensure_aliyun_ubuntu_image():
-    """确保 ubuntu:20.04 镜像存在（通过阿里云私有仓库）"""
-    # 检查是否已有 ubuntu:20.04
+def run_cmd(cmd, cwd=None, check=True):
+    import subprocess
+    cmd_str = ' '.join(cmd) if isinstance(cmd, list) else cmd
+    print(f"▶️ 执行: {cmd_str}")
     result = subprocess.run(
-        ["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"],
-        capture_output=True, text=True
+        cmd,
+        shell=isinstance(cmd, str),
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True
     )
-    local_images = set(line.strip() for line in result.stdout.splitlines()) if result.stdout else set()
-
-    if TARGET_BASE_IMAGE in local_images:
-        print(f"✅ 本地已存在 {TARGET_BASE_IMAGE}，跳过拉取")
-        return
-
-    print(f"🔑 正在登录阿里云容器镜像服务 ({ALIYUN_CR_REGISTRY})...")
-    login_cmd = [
-        "docker", "login",
-        "--username", ALIYUN_CR_USERNAME,
-        "--password", ALIYUN_CR_PASSWORD,
-        ALIYUN_CR_REGISTRY
-    ]
-    # 使用 run_cmd 但隐藏密码（避免日志泄露）
-    subprocess.run(login_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    print("✅ 登录成功")
-
-    print(f"📥 正在拉取私有镜像: {PRIVATE_UBUNTU_IMAGE}")
-    run_cmd(["docker", "pull", PRIVATE_UBUNTU_IMAGE])
-
-    print(f"🏷️  重命名镜像为 {TARGET_BASE_IMAGE}")
-    run_cmd(["docker", "tag", PRIVATE_UBUNTU_IMAGE, TARGET_BASE_IMAGE])
-
-    print(f"✅ 基础镜像 {TARGET_BASE_IMAGE} 已准备就绪")
-
+    if result.returncode != 0:
+        if check:
+            print(f"❌ 命令失败 (exit {result.returncode}):\n{result.stdout}")
+            sys.exit(1)
+        else:
+            print(f"⚠️ 命令失败（已忽略）:\n{result.stdout}")
+    else:
+        output = result.stdout.strip()
+        if output:
+            print(output)
+        else:
+            print("✅ 成功")
+    return result  # 返回结果用于检查
 
 def deploy_sangao():
-    # 确保 Docker 已安装
-    install_docker()
+    SCRIPT_DIR = Path(__file__).parent.resolve()
+    proj_dir = SCRIPT_DIR / "sangao"
 
-    # 确保 ubuntu:20.04 镜像可用（从私有源）
-    ensure_aliyun_ubuntu_image()
-
-    # ✅ 动态获取脚本所在目录，并定位到同级 projects/sangao
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    proj_dir = os.path.join(SCRIPT_DIR, "sangao")
-
-    if not os.path.exists(proj_dir):
+    if not proj_dir.exists():
         print(f"⚠️  {proj_dir} 目录不存在，跳过部署")
         return
 
-    print(f"\n🚀 部署 {proj_dir} 项目...")
-    original_dir = os.getcwd()
-    compose_file = os.path.join(proj_dir, "docker-compose.yml")
-    temp_compose = os.path.join(proj_dir, "docker-compose.build.yml")
+    print(f"\n🚀 非容器化部署 sangao（监听 8080）...")
 
-    try:
-        os.chdir(proj_dir)
+    VENV_DIR = proj_dir / ".venv"
+    VENV_PYTHON = VENV_DIR / "bin" / "python"
+    # 注意：不再使用pip_bin变量，所有pip命令都通过python -m pip执行
 
-        # === 新增逻辑：检查并清理旧容器 ===
-        print("🔍 检查是否存在旧的 sangao 容器...")
-        result = subprocess.run(
-            ["docker", "compose", "-f", compose_file, "ps", "-q"],
-            capture_output=True,
-            text=True
-        )
-        if result.stdout.strip():
-            print("🛑 发现正在运行或已停止的容器，正在停止并删除...")
-            run_cmd(["docker", "compose", "-f", compose_file, "down"])
+    # 创建虚拟环境（总是重新创建以避免pip版本问题）
+    print("🗑️  删除现有虚拟环境...")
+    if VENV_DIR.exists():
+        shutil.rmtree(VENV_DIR)
+    print("🔧 正在创建新的虚拟环境...")
+    run_cmd([sys.executable, "-m", "venv", str(VENV_DIR)])
+
+    # 升级 pip（避免旧 pip 问题）
+    run_cmd([str(VENV_PYTHON), "-m", "pip", "install", "--upgrade", "pip", 
+             "-i", "https://pypi.tuna.tsinghua.edu.cn/simple",
+             "--trusted-host", "pypi.tuna.tsinghua.edu.cn"])
+
+    # 安装依赖：优先使用项目根目录下的 requirements.txt
+    req_file = proj_dir / "requirements.txt"
+    if req_file.exists():
+        print("📦 使用 requirements.txt 安装依赖...")
+        run_cmd([str(VENV_PYTHON), "-m", "pip", "install", "-r", str(req_file),
+                 "-i", "https://pypi.tuna.tsinghua.edu.cn/simple",
+                 "--trusted-host", "pypi.tuna.tsinghua.edu.cn"], cwd=proj_dir)
+    else:
+        print("ℹ️  未找到 requirements.txt，安装项目所需的所有依赖...")
+        # 安装Dockerfile中指定的所有Python库
+        packages = [
+            "tornado",
+            "requests", 
+            "python-dateutil", 
+            "psutil", 
+            "docker", 
+            "aiohttp", 
+            "openpyxl"
+        ]
+        
+        # 使用清华源安装
+        for package in packages:
+            print(f"📡 安装 {package}，使用源: https://pypi.tuna.tsinghua.edu.cn/simple")
+            res = run_cmd([
+                str(VENV_PYTHON), "-m", "pip", "install", package,
+                "-i", "https://pypi.tuna.tsinghua.edu.cn/simple",
+                "--trusted-host", "pypi.tuna.tsinghua.edu.cn"
+            ], check=False)
+            if res.returncode != 0:
+                print(f"❌ 无法安装 {package}，请检查网络！")
+                sys.exit(1)
+
+    # === 验证关键模块是否可导入 ===
+    print("🔍 验证关键模块是否安装成功...")
+    modules_to_check = ["tornado", "requests"]
+    for module in modules_to_check:
+        if module == "tornado":
+            verify_cmd = [str(VENV_PYTHON), "-c", f"import {module}; print('{module} version:', {module}.version)"]
         else:
-            print("ℹ️  未发现旧容器，继续部署...")
-
-        # 读取并修改 compose 文件（确保 build 不 pull）
-        with open(compose_file, 'r', encoding='utf-8') as f:
-            compose_config = yaml.safe_load(f)
-
-        # 如果未来启用了 build，强制禁用 pull
-        if compose_config.get('services', {}).get('app', {}).get('build') is not None:
-            if 'build' not in compose_config['services']['app']:
-                compose_config['services']['app']['build'] = {}
-            compose_config['services']['app']['build']['pull'] = False
-            compose_config['services']['app']['build']['no_cache'] = False  # 可选
-
-            with open(temp_compose, 'w', encoding='utf-8') as f:
-                yaml.dump(compose_config, f, default_flow_style=False, allow_unicode=True)
-            compose_to_use = temp_compose
+            verify_cmd = [str(VENV_PYTHON), "-c", f"import {module}; print('{module} version:', {module}.__version__)"]
+        verify_res = run_cmd(verify_cmd, check=False)
+        if verify_res.returncode != 0:
+            print(f"❌ {module} 未正确安装！")
+            sys.exit(1)
         else:
-            # 当前未启用 build，直接使用原文件
-            compose_to_use = compose_file
-            print("ℹ️  docker-compose.yml 未启用 build，跳过构建配置修改")
+            print(f"✅ {module} 已成功安装并可导入")
 
-        print("▶️  启动 sangao 容器...")
-        run_cmd(["docker", "compose", "-f", compose_to_use, "up", "-d", "--build"])
-    finally:
-        os.chdir(original_dir)
-        if os.path.exists(temp_compose):
-            os.remove(temp_compose)
+    # 停止旧服务
+    service_name = "sangao"
+    run_cmd(["sudo", "systemctl", "stop", service_name], check=False)
+    run_cmd(["sudo", "systemctl", "disable", service_name], check=False)
 
-    print(f"✅ {proj_dir} 部署完成（端口: 80）")
+    # systemd 服务
+    current_user = os.getenv("USER")
+    systemd_unit = f"""
+[Unit]
+Description=Sangao Web Application
+After=network.target
+
+[Service]
+Type=simple
+User={current_user}
+WorkingDirectory={proj_dir}
+ExecStart={VENV_PYTHON} app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+"""
+
+    service_path = Path(f"/tmp/{service_name}.service")
+    with open(service_path, "w") as f:
+        f.write(systemd_unit.strip())
+
+    run_cmd(["sudo", "cp", str(service_path), f"/etc/systemd/system/{service_name}.service"])
+    run_cmd(["sudo", "systemctl", "daemon-reload"])
+    run_cmd(["sudo", "systemctl", "enable", "--now", service_name])
+
+    print(f"✅ sangao 服务已启动（监听 8080）")
+    print(f"   日志: sudo journalctl -u {service_name} -f")

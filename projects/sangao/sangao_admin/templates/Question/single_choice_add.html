@@ -144,12 +144,16 @@ textarea{
       <th>来源</th>
       <td>
         <select name="source">
-          <option value="卓凡题库">卓凡题库</option>
-          <option value="模考">模考</option>
-          <option value="真题">真题</option>
+          {%for vo in sources%}
+          <option value="{{vo['id']}}">{{vo["public_year"]}}{{vo["publicer"]}}</option>
+          {%end%}
         </select>
       </td>
     </tr>    
+    <tr>
+      <th scope="row">解析</th>
+      <td><textarea rows="20" name="explain"></textarea></td>
+    </tr>       
     <tr>
       <th scope="row">&nbsp;</th>
       <td><input type="submit" value="提交"></td>

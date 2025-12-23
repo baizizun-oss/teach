@@ -4,6 +4,7 @@ import logging
 import os
 import config
 from common.CommonModel import Common
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,8 @@ class OperationQuestionModel:
             ,knowledge.name as knowledge_name
             ,question.difficult as difficult
             ,question.score as max_score
+            ,question.explain as explain
+            ,question.score_rules as score_rules
             from operation_question as question  join module on module.id = question.module join knowledge on knowledge.id = question.knowledge where question.id=?
             """
         question=Common.find("sangao",sql,(question_id,))
@@ -59,8 +62,15 @@ class OperationQuestionModel:
         self.knowledge_name = question["knowledge_name"]
         self.difficult = question["difficult"]
         self.max_score = question["max_score"]
+        self.explain = question["explain"]
+        self.score_rules = question["score_rules"]
   
     def to_dict(self):
+        try:
+            self.score_rules_dict = json.loads(self.score_rules) if self.score_rules else {}
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.warning(f"Failed to parse score_rules for question {self.question_id}: {e}")
+            self.score_rules_dict = {}   
         return {
             "question_id": self.question_id,
             "title": self.title,
@@ -73,6 +83,8 @@ class OperationQuestionModel:
             "score_rules": self.score_rules,
             "knowledge_name":self.knowledge_name,
             "difficult":self.difficult,
-            "max_score":self.max_score
+            "max_score":self.max_score,
+            "explain":self.explain,
+            "score_rules":self.score_rules_dict
         }
 

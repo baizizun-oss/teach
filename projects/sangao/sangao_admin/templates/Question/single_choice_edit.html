@@ -106,7 +106,7 @@ textarea{
       <th scope="row">标准答案</th>
       <td>
       <select name="correct_answer">
-        <option value="{{question['answer']}}" selected>{{question["answer"]}}</option>
+        <option value="{{question['correct_answer']}}" selected>{{question["correct_answer"]}}</option>
         <option value="A">A</option>
         <option value="B">B</option>
         <option value="C">C</option>
@@ -145,6 +145,10 @@ textarea{
         </select>
       </td>
     </tr>        
+    <tr>
+      <th scope="row">解析</th>
+      <td><textarea rows="20" name="explain">{{question["explain"]}}</textarea></td>
+    </tr>    
     <tr>
       <th scope="row">&nbsp;</th>
       <td><input type="submit" value="提交"></td>

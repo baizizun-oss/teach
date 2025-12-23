@@ -9,6 +9,7 @@ import config
 from common.CommonModel import Common
 from common.OperationQuestionModel import OperationQuestionModel
 from common.OperationAnswerModel import OperationAnswerModel
+from common.SingleChoiceQuestionModel import SingleChoiceQuestionModel
 
 logger = logging.getLogger(__name__)
 
@@ -39,17 +40,17 @@ class errorQuestionHandler(tornado.web.RequestHandler):
                 single_choice_error_stats.setdefault(vo["question_id"],{"answer_sum":0,"error_sum":0,"question_type":"单选","question_title":""})
                 single_choice_error_stats[vo["question_id"]]["answer_sum"]+=1
 
-                sql = "select student_answer.question_id as question_id ,student_answer.question_type as question_type, student_answer.user_answer as student_answer,question.answer as question_answer,student_answer.student_id,question.title as question_title from student_answer join single_choice_question as question on question.id = student_answer.question_id where question.id= "+str(vo["question_id"])
-                student_answer = common.select("sangao",sql)
-                #将试题内容和类型保存在错题统计字典中
-                if not single_choice_error_stats[vo["question_id"]]["question_title"]:
-                    single_choice_error_stats[vo["question_id"]]["question_title"]=student_answer[0]["question_title"]
-                # print("同一题的记录：",student_answer)
-                if vo["user_answer"] != student_answer[0]["question_answer"]:
-                    error_question.append(vo)
-                    # #做错此题的人数加1
-                    single_choice_error_stats[vo["question_id"]]["error_sum"]+=1
-                    # print("single_choice:",single_choice_error_stats[vo["question_id"]])
+                Question=SingleChoiceQuestionModel(vo["question_id"])
+                if Question:
+                    #将试题内容和类型保存在错题统计字典中
+                    if not single_choice_error_stats[vo["question_id"]]["question_title"]:
+                        single_choice_error_stats[vo["question_id"]]["question_title"]=Question.title
+                    # print("同一题的记录：",student_answer)
+                    if vo["user_answer"] != Question.correct_answer:
+                        error_question.append(vo)
+                        # #做错此题的人数加1
+                        single_choice_error_stats[vo["question_id"]]["error_sum"]+=1
+                        # print("single_choice:",single_choice_error_stats[vo["question_id"]])
             if vo["question_type"] == "true_false":
                 #同样的，做过的+1
                 tf_error_stats.setdefault(vo["question_id"],{"answer_sum":0,"error_sum":0,"question_type":"判断","question_title":""})

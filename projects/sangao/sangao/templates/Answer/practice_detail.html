@@ -35,6 +35,9 @@ input[type="file"]{
 textarea{
 	width:100%;
 	}	
+span[id="explain"]{
+  color: brown;
+}
 </style>
 <table width="100%" border="1">
 
@@ -49,7 +52,7 @@ textarea{
     {%for vo in single_choice_answers%}  
   <tr>
     <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="single_choice_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="single_choice"></th>
-    <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_single_choice_question_images/{{vo['picture']}}">{% end %}</th>
+    <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_single_choice_question_images/{{vo['picture']}}">{% end %}<br><span id="explain">解析：</span>{{vo["explain"]}}</th>
     <td>
       <p>
         <span>{{vo["choice1"]}}</span>
@@ -82,7 +85,7 @@ textarea{
   {%for vo in tf_answers%}
   <tr>
     <th scope="row">第{{vo["question_id"]}}题<input hidden="" type="text" name="tf_question_id" value="{{vo['question_id']}}"><input hidden="" type="text" name="question_type" value="true_false"></th>
-    <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_tf_question_images/{{vo['picture']}}">{% end %}</th>
+    <th scope="row">{{vo["title"]}}{% if vo["picture"] != "" %}<img width="500" src="/static_tf_question_images/{{vo['picture']}}">{% end %}{{vo["explain"]}}</th>
     <td>{{vo["user_answer"]}}</td>
     <td>{{vo["answer"]}}</td> 
   </tr>   

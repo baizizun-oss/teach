@@ -22,7 +22,10 @@ PATH = {
             },
             "files":{
                 "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "files"),
-            }
+            },
+            "video":{
+                "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "video"),
+            }            
         },
         "Answer": {
             "js": os.path.join(BASE_DIR, "sangao", "templates", "Answer", "static", "js"),
@@ -48,7 +51,10 @@ PATH = {
                 "single_choice": os.path.join(UPLOAD_ROOT, "Question", "single_choice", "images"),
                 "multiple_choice": os.path.join(UPLOAD_ROOT, "Question", "multiple_choice", "images"),
                 "fill_blank": os.path.join(UPLOAD_ROOT,"Question", "fill_blank", "images")
-            }
+            },
+            "video":{
+                "operation": os.path.join(UPLOAD_ROOT, "Question", "operation", "video"),
+            }                        
         },
         "TeachExam": {
             "js": os.path.join(BASE_DIR, "sangao_admin", "templates", "TeachExam", "static", "js"),

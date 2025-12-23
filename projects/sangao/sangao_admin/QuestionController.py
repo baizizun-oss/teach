@@ -21,6 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 from common.CommonModel import Common
 from common.OperationQuestionModel import OperationQuestionModel
+from common.SingleChoiceQuestionModel import SingleChoiceQuestionModel
 
 
 class listsHandler(tornado.web.RequestHandler):
@@ -140,24 +141,16 @@ class editHandler(tornado.web.RequestHandler):
             self.render(os.path.join(common.BASE_DIR, "sangao_admin", "templates", "Question", template), **kwargs)
 
         if question_type == 'single_choice':
-            sql = """
-                SELECT q.id AS question_id, s.id AS source_id, s.publicer, s.public_year,
-                       q.difficult, q.picture, q.choice1, q.choice2, q.choice3, q.choice4,
-                       q.title, q.answer, q.knowledge, m.name AS module_name, q.module AS module_id,
-                       k.name AS knowledge_name
-                FROM single_choice_question q
-                JOIN module m ON m.id = q.module
-                JOIN knowledge k ON k.id = q.knowledge
-                JOIN question_source s ON s.id = q.source
-                WHERE q.id = ?
-            """
-            question = common.find("sangao", sql, (question_id,))
-            if not question:
+
+            logging.info(f"question_id:{question_id}")
+            Question = SingleChoiceQuestionModel(question_id)
+            if Question is None:
                 self.write("题目不存在！")
                 return
-            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+
+            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (Question.to_dict()["module_id"],))
             sources = common.select("sangao", "SELECT * FROM question_source")
-            render_template("single_choice_edit.html", question=question, modules=modules, knowledges=knowledges, sources=sources)
+            render_template("single_choice_edit.html", question=Question.to_dict(), modules=modules, knowledges=knowledges, sources=sources)
 
         elif question_type == 'true_false':
             sql = """
@@ -177,40 +170,18 @@ class editHandler(tornado.web.RequestHandler):
 
         elif question_type == 'operation':
             Question = OperationQuestionModel(question_id)
+            logger.info(f"question:{Question.to_dict()}")
             if not Question:
                 self.write("题目不存在！")
                 return
             knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (Question.module_id,))
 
-            # 解析 score_rules
-            try:
-                score_rules_dict = json.loads(Question.score_rules) if Question.score_rules else {}
-            except:
-                score_rules_dict = {}
 
-               
-            # 👇 修改：包含 conditional_formatting
-            rule_keys = ['cell_values', 'formulas', 'chart', 'merged_cells', 'conditional_formatting']
-            formatted_rules = {}
-            for key in rule_keys:
-                rule = score_rules_dict.get(key, {})
-                formatted_rules[key] = {
-                    'max_score_str': self.format_score(rule.get('max_score', 0)),
-                    'desc': rule.get('desc', ''),
-                    'max_score': rule.get('max_score', 0)
-                }
-            formatted_rules['compare_range'] = score_rules_dict.get('compare_range', '')
-
-
-
-            logger.info(f"rules:{formatted_rules}")
-            logger.info(f"rules['cell_values']:{formatted_rules['cell_values']}")
             render_template(
                 "operation_edit.html",
                 question=Question.to_dict(),
                 modules=modules,
                 knowledges=knowledges,
-                rules=formatted_rules  # 👈 传这个而不是 raw dict
             )
 
 
@@ -280,6 +251,7 @@ class editHandler(tornado.web.RequestHandler):
                     "knowledge": self.get_argument("knowledge"),
                     "difficult": self.get_argument("difficult"),
                     "source": self.get_argument("source"),
+                    "explain":self.get_argument("explain")
                 }
                 pic = save_file('photo1')
                 if pic:
@@ -307,6 +279,8 @@ class editHandler(tornado.web.RequestHandler):
                     data["material2"] = save_file('material2', 'files')
                 if save_file('correct_answer', 'files'):
                     data["answer"] = save_file('correct_answer', 'files')
+                if save_file('explain', 'video'):
+                    data["explain"] = save_file('explain', 'video')                    
 
                 # 评分规则
                 scoring_rules = {}

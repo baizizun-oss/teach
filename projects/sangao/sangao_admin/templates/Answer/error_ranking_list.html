@@ -57,7 +57,7 @@ textarea{
         {% set parts=key.split(":")%}
         {{ parts[1]}}
       </td>
-      <td>{{vo["question_title"]}}</td>
+      <td><a href="">{{vo["question_title"]}}</a></td>
       <td>{{vo["answer_sum"]}}</td>
       <td>{{vo["error_sum"]}}</td>
       <td>{{"%.2f%%" % (vo["error_sum"] / vo["answer_sum"] * 100)}}</td>

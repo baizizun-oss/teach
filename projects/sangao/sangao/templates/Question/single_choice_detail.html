@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+<!-- 引入jQuery -->
+<script src="/static_Question_js/jquery-3.7.1.min.js"></script>
+<!-- ... 原有的样式和脚本 ... -->
+<title>操作题作答详情</title>
+<!-- 添加代码高亮基础样式 -->
+<style>
+  .code-container {
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    overflow: auto;
+  }
+  .code-container pre {
+    margin: 0;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+  .load-error {
+    color: #d32f2f;
+    font-weight: bold;
+  }
+  /* Excel文件样式 */
+  .excel-file-link {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  .excel-file-link:hover {
+    background-color: #45a049;
+  }
+  
+  /* 评分详情样式 */
+  .scoring-details {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  
+  .scoring-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .scoring-item:last-child {
+    border-bottom: none;
+  }
+  
+  .scoring-label {
+    font-weight: bold;
+  }
+  
+  .scoring-score {
+    color: #2196F3;
+  }
+  
+  .scoring-total {
+    font-weight: bold;
+    color: #FF5722;
+  }
+  
+  .no-scoring-details {
+    color: #999;
+    font-style: italic;
+  }
+</style>
+</head>
+
+<body>
+<script>
+$(document).ready(function() {
+
+  // === 新增：文件内容加载函数 ===
+  function loadFileContent(elementId, filePath) {
+    // 检查是否为Excel文件
+    if (filePath && (filePath.endsWith('.xlsx') || filePath.endsWith('.xls'))) {
+      // 对于Excel文件，只显示下载链接
+      $(`#${elementId}`).html(`<a href="/static_operation_question_files/${filePath}" class="excel-file-link" download>下载Excel文件</a>`);
+      return;
+    }
+    
+    if (!filePath) return;
+    
+    $(`#${elementId}`).html('<div class="code-container"><pre>加载中...</pre></div>');
+    
+    $.get('/static_operation_question_files/' + filePath)
+      .done(function(data) {
+        $(`#${elementId}`).html(
+          `<div class="code-container"><pre>${escapeHtml(data)}</pre></div>`
+        );
+      })
+      .fail(function() {
+        $(`#${elementId}`).html(
+          `<div class="load-error">❌ 文件加载失败（请确认文件存在）</div>`
+        );
+      });
+  }
+  
+  function loadUserAnswerFileContent(elementId, filePath) {
+    // 检查是否为Excel文件
+    if (filePath && (filePath.endsWith('.xlsx') || filePath.endsWith('.xls'))) {
+      // 对于Excel文件，只显示下载链接
+      $(`#${elementId}`).html(`<a href="/static_Answer_files/${filePath}" class="excel-file-link" download>下载Excel文件</a>`);
+      return;
+    }
+    
+    if (!filePath) return;
+    
+    $(`#${elementId}`).html('<div class="code-container"><pre>加载中...</pre></div>');
+    
+    $.get('/static_Answer_files/' + filePath)
+      .done(function(data) {
+        $(`#${elementId}`).html(
+          `<div class="code-container"><pre>${escapeHtml(data)}</pre></div>`
+        );
+      })
+      .fail(function() {
+        $(`#${elementId}`).html(
+          `<div class="load-error">❌ 文件加载失败（请确认文件存在）</div>`
+        );
+      });
+  }  
+
+  function loadMaterialFileContent(elementId, filePath) {
+    // 检查是否为Excel文件
+    if (filePath && (filePath.endsWith('.xlsx') || filePath.endsWith('.xls'))) {
+      // 对于Excel文件，只显示下载链接
+      $(`#${elementId}`).html(`<a href="/static_Answer_files/${filePath}" class="excel-file-link" download>下载Excel文件</a>`);
+      return;
+    }
+    
+    if (!filePath) return;
+    
+    $(`#${elementId}`).html('<div class="code-container"><pre>加载中...</pre></div>');
+    
+    $.get('/static_Answer_files/' + filePath)
+      .done(function(data) {
+        $(`#${elementId}`).html(
+          `<div class="code-container"><pre>${escapeHtml(data)}</pre></div>`
+        );
+      })
+      .fail(function() {
+        $(`#${elementId}`).html(
+          `<div class="load-error">❌ 文件加载失败（请确认文件存在）</div>`
+        );
+      });
+  }    
+  // 工具函数：防止XSS攻击
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // === 新增：自动加载文件内容 ===
+  {% if operation_answer["material"]!="" %}
+  loadUserAnswerFileContent('material_content', '{{operation_answer["material"]}}');
+  {% end %}
+
+  {% if operation_answer["user_answer"]!="" %}
+  loadUserAnswerFileContent('user_answer_content', '{{operation_answer["user_answer"]}}');
+  {% end %}
+  
+  {% if operation_answer["answer"]!="" %}
+  loadFileContent('correct_answer_content', '{{operation_answer["answer"]}}');
+  {% end %}
+});
+</script>    
+
+<!-- ... 原有样式保持不变 ... -->
+<style>
+tr{
+	height:200px;
+	font-size:48px;
+	}
+button{
+	width:100px;
+	height:100px;
+	}
+input{
+	width:50px;
+	height:50px;
+	}
+input[type="submit"]{
+	width:200px; 
+	height:300px; 
+	font-size:36px;
+	}
+input[type="text"]{
+	width:80%;
+	}
+input[type="file"]{
+	width:100%;
+	}	
+textarea{
+	width:100%;
+	}	
+</style>
+
+<table width="100%" border="1">
+  <!-- ... 题目和图片部分保持不变 ... -->
+  <tr>
+    <th scope="row">题目</th>
+    <td>{{operation_answer['title']}}</td>
+  </tr>
+  {% if operation_answer["picture"]!="" %}
+  <tr>
+    <th scope="row">图片</th>
+    <td><img src="/static_operation_question_images/{{operation_answer['picture']}}"></td>
+  </tr>
+  {% end %}
+  {% if operation_answer["material"]!="" %}
+  <tr>
+    <th scope="row">素材文件1</th>
+    <td>
+      <a href="/static_operation_question_files/{{operation_answer['material']}}" class="excel-file-link" download>{{operation_answer["material"]}}</a>
+      <div id="material_content"></div>
+    </td>
+  </tr> 
+  {% end %}  
+  {% if operation_answer["material2"]!="" %} 
+  <tr>
+    <th scope="row">素材文件2</th>
+    <td><a href="/static_operation_question_files/{{operation_answer['material2']}}" class="excel-file-link" download>{{operation_answer["material2"]}}</a></td>
+  </tr>        
+  {% end %}  
+  {% if operation_answer["user_answer"]!="" %} 
+  <tr>
+    <th scope="row">我的作答</th>
+    <td>
+      <a href="/static_Answer_files/{{operation_answer['user_answer']}}" class="excel-file-link" download>{{operation_answer["user_answer"]}}</a>
+      <!-- 新增：文件内容展示区域 -->
+      <div id="user_answer_content"></div>
+    </td>
+  </tr>        
+  {% end %}    
+  
+  {% if operation_answer["answer"]!="" %}
+  <tr>
+    <th scope="row">标准答案</th>
+    <td>
+      <!-- 保留原下载链接 -->
+      <a href="/static_operation_question_files/{{operation_answer['answer']}}" class="excel-file-link" download>{{operation_answer["answer"]}}</a>
+      <!-- 新增：答案内容展示区域 -->
+      <div id="correct_answer_content"></div>
+    </td>
+  </tr>
+  {% end %}
+  
+  <!-- 显示评分详情 -->
+  {% if 'scoring_details' in operation_answer and operation_answer['scoring_details'] %}
+  <tr>
+    <th scope="row">评分详情</th>
+    <td>
+      <div class="scoring-details">
+        <div class="scoring-item">
+          <span class="scoring-label">评分项</span>
+          <span class="scoring-label">得分</span>
+        </div>
+        {% for key, detail in operation_answer['scoring_details'].items() %}
+          {% if key != 'total_score' and key != 'max_total_score' %}
+          <div class="scoring-item">
+            <span class="scoring-desc">{{detail['desc']}}</span>
+            <span class="scoring-score">{{'{:.1f}'.format(detail['score'])}} / {{detail['max_score']}}</span>
+          </div>
+          {% end %}
+        {% end %}
+        <div class="scoring-item">
+          <span class="scoring-label">总分</span>
+          <span class="scoring-total">{{'{:.1f}'.format(operation_answer['scoring_details']['total_score'])}} / {{operation_answer['scoring_details']['max_total_score']}}</span>
+        </div>
+      </div>
+    </td>
+  </tr>
+  {% elif operation_answer["score"] is not None %}
+  <tr>
+    <th scope="row">评分详情</th>
+    <td>
+      <div class="scoring-details">
+        <div class="scoring-item">
+          <span class="scoring-label">总分</span>
+          <span class="scoring-total">{{operation_answer["score"]}} / 15</span>
+        </div>
+        <div class="scoring-item no-scoring-details">
+          详细评分信息不可用
+        </div>
+      </div>
+    </td>
+  </tr>
+  {% end %}
+
+</table>
+</body>
+</html>

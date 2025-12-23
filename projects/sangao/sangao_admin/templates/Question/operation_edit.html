@@ -145,13 +145,26 @@ input[type="submit"] {
         {% end %}
       </td>
     </tr>
-
+    <tr>
+      <th scope="row">操作演示</th>
+      <td>
+        <input type="file" name="explain" class="file">
+        {% if question["explain"] %}
+          <br>  
+          <video src="/static_operation_question_video/{{question['explain']}}" 
+         controls 
+         style="max-width: 100%; height: auto;">
+          您的浏览器不支持视频播放。
+          </video>
+        {% end %}
+      </td>
+    </tr>
     <!-- 新增：评分规则配置 -->
     <tr>
       <th scope="row">评分规则配置</th>
       <td>
         <!-- 解析当前评分规则（如果存在） -->
-        {% set rules = question.get('score_rules_dict', {}) %}
+        {% set rules = question.get('score_rules', {}) %}
         
         <div class="scoring-item">
           <label>
@@ -160,7 +173,7 @@ input[type="submit"] {
             单元格值比对
           </label>
           <input type="number" name="rule_score_cell_values" 
-                value="{{ rules.get('cell_values', {}).get('max_score_str', '0') }}" 
+                value="{{ rules.get('cell_values', {}).get('max_score', '0') }}" 
                 min="0" step="0.1"> 分
           <input type="text" name="rule_desc_cell_values" 
                  value="{{ rules.get('cell_values', {}).get('desc', '数据内容是否正确') }}">
@@ -174,7 +187,7 @@ input[type="submit"] {
           </label>
 
           <input type="number" name="rule_score_formulas" 
-                value="{{ rules.get('formulas', {}).get('max_score_str', '0') }}" 
+                value="{{ rules.get('formulas', {}).get('max_score', '0') }}" 
                 min="0" step="0.1"> 分                 
           <input type="text" name="rule_desc_formulas" 
                  value="{{ rules.get('formulas', {}).get('desc', '是否使用公式计算') }}">
@@ -188,7 +201,7 @@ input[type="submit"] {
           </label>
 
           <input type="number" name="rule_score_chart" 
-                value="{{ rules.get('chart', {}).get('max_score_str', '0') }}" 
+                value="{{ rules.get('chart', {}).get('max_score', '0') }}" 
                 min="0" step="0.1"> 分                    
           <input type="text" name="rule_desc_chart" 
                  value="{{ rules.get('chart', {}).get('desc', '是否包含图表') }}">
@@ -202,7 +215,7 @@ input[type="submit"] {
           </label>
 
           <input type="number" name="rule_score_merged_cells" 
-                value="{{ rules.get('merged_cells', {}).get('max_score_str', '0') }}" 
+                value="{{ rules.get('merged_cells', {}).get('max_score', '0') }}" 
                 min="0" step="0.1"> 分                   
           <input type="text" name="rule_desc_merged_cells" 
                  value="{{ rules.get('merged_cells', {}).get('desc', '标题是否合并居中') }}">

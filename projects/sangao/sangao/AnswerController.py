@@ -24,12 +24,20 @@ class practiceAddHandler(tornado.web.RequestHandler):
         if not user_id:
             self.write("未登录，请先<a href='/sangao/Index/login'>登录</a>！")
             return
-
+        submission_id=AnswerService.get_submission_id()
         if self.get_argument("type")=="single_choice":
             logger.info(f"单选题：{self.get_body_arguments('question_id')}")
-            for question_id in self.get_body_arguments("question_id"):
-                question = SingleChoiceQuestionModel.get_question(question_id)
-                
+            for key in range(len(self.get_body_arguments("question_id"))):
+                Question = SingleChoiceQuestionModel(self.get_body_arguments("question_id")[key])
+                #处理score
+                if Question.correct_answer == self.get_body_arguments("answer")[key]:
+                    score=2
+                else:
+                    score=0
+                result=Common.execute("sangao","insert into student_answer(student_id,question_id,question_type,user_answer,score,score_details,ctime,submission_id) values(?,?,?,?,?,?,?,?)",
+                               (user_id,Question.question_id,"single_choice",self.get_arguments("answer")[key],score,"",int(time.time()),submission_id))
+                if result:
+                    self.write("<html><script>windows.alert('提交成功！请去”我的作答“中查看得分和解析！');</script></html>")
         if self.get_argument("type")=="multiple_choice":
             pass
 
@@ -85,6 +93,7 @@ class practiceDetailHandler(tornado.web.RequestHandler):
             return
         single_choice_sql="select * from student_answer join single_choice_question on single_choice_question.id = student_answer.question_id where submission_id='"+self.get_argument("submission_id") + "' and question_type = 'single_choice'"
         single_choice_answers=Common.select("sangao",single_choice_sql)
+        logger.info(f"single_choice:{single_choice_answers}")
         multiple_choice_sql="select * from student_answer join multiple_choice_question on multiple_choice_question.id = student_answer.question_id where submission_id='"+self.get_argument("submission_id") + "' and question_type = 'multiple_choice'"
         multiple_choice_answers = Common.select("sangao",multiple_choice_sql)
         tf_sql="select * from student_answer join tf_question on tf_question.id = student_answer.question_id where submission_id='"+self.get_argument("submission_id") + "' and question_type = 'true_false'"
@@ -135,7 +144,9 @@ class questionAnswerDetailHandler(tornado.web.RequestHandler):
                               WHERE submission_id=? AND question_type=? AND question_id=?"""
                               
             operation_answer = Common.find("sangao", operation_sql, (submission_id, question_type, question_id))
-            
+            Question=OperationQuestionModel(question_id)
+            if Question is None:
+                self.write("原题已经删除！无法查看作答！")
             # 如果有评分详情，将其添加到operation_answer中
             if operation_answer and operation_answer.get("score_details"):
                 try:
@@ -145,7 +156,8 @@ class questionAnswerDetailHandler(tornado.web.RequestHandler):
                     logger.error(f"解析评分详情失败: {e}")
 
             self.render(os.path.join(config.BASE_DIR,"sangao","templates","Answer","operation_answer_detail.html"),
-                        operation_answer=operation_answer
+                        operation_answer=operation_answer,
+                        question=Question.to_dict()
                         )
 
 import os

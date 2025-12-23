@@ -143,6 +143,7 @@ if __name__ == '__main__':
         (r'/static_operation_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","operation")}),
         (r'/static_tf_question_images/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","images","true_false")}),
         (r'/static_operation_question_files/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","files","operation")}),
+        (r'/static_operation_question_video/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Question","video","operation")}),
         (r'/static_Answer_files/(.*)', StaticFileHandler, {'path': config.get_path("sangao","Answer","files")}),
         (r'/board_pic/(.*)', StaticFileHandler, {'path': config.get_path("sangao_admin","TeachExam", "images","board")}),
         (r'/static_Question_js/(.*)',StaticFileHandler, {'path': config.get_path("sangao","Question", "js")}),

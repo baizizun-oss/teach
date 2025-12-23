@@ -214,6 +214,7 @@ class errorQuestionHandler(tornado.web.RequestHandler):
         error_question = []
         single_choice_error_stats = {}
         tf_error_stats = {}
+        operation_error_stats = {}
         sql = "select * from student_answer"
         student_answers=Common.select("sangao",sql)
         for vo in student_answers:
@@ -248,6 +249,21 @@ class errorQuestionHandler(tornado.web.RequestHandler):
                     #错过的+1
                     # ++true_false_error_sum[student_answer["question_id"]]
                     tf_error_stats[vo["question_id"]]["error_sum"]+=1
+            if vo["question_type"] == "operation":
+                #同样的，做过的+1
+                operation_error_stats.setdefault(vo["question_id"],{"answer_sum":0,"error_sum":0,"question_type":"operation","question_title":""})
+                operation_error_stats[vo["question_id"]]["answer_sum"]+=1
+                sql = "select student_answer.question_id as question_id ,student_answer.question_type as question_type, student_answer.answer as student_answer,question.answer as question_answer,student_answer.student_id,question.title as question_title from student_answer join tf_question as question on question.id = student_answer.question_id where question.id= "+str(vo["question_id"]) 
+                student_answer = Common.select("sangao",sql)
+                #将试题内容和类型保存在错题统计字典中
+                if not operation_error_stats[vo["question_id"]]["question_title"]:
+                    operation_error_stats[vo["question_id"]]["question_title"]=student_answer[0]["question_title"]
+                #print("同一题的记录：",student_answer)                
+                if vo["answer"] != student_answer[0]["question_answer"]:
+                    error_question.append(vo)  
+                    #错过的+1
+                    # ++true_false_error_sum[student_answer["question_id"]]
+                    operation_error_stats[vo["question_id"]]["error_sum"]+=1
 
         #最后将错题的统计信息单独保存为一个字典
         #对列表进行去重

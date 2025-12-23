@@ -6,7 +6,9 @@ import logging
 import os
 from tornado.web import HTTPError
 import config
-
+from common.CommonModel import Common
+from common.OperationQuestionModel import OperationQuestionModel
+from common.OperationAnswerModel import OperationAnswerModel
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,7 @@ class errorQuestionHandler(tornado.web.RequestHandler):
         error_question = []
         single_choice_error_stats = {}
         tf_error_stats = {}
+        operation_error_stats = {}
         sql = "select * from student_answer"
         student_answers=common.select("sangao",sql)
         for vo in student_answers:
@@ -62,11 +65,24 @@ class errorQuestionHandler(tornado.web.RequestHandler):
                     #错过的+1
                     # ++true_false_error_sum[student_answer["question_id"]]
                     tf_error_stats[vo["question_id"]]["error_sum"]+=1
+            if vo["question_type"] == "operation":
+                logger.info(f"question_id:{vo['question_id']}")
+                #同样的，做过的+1
+                operation_error_stats.setdefault(vo["question_id"],{"answer_sum":0,"error_sum":0,"question_type":"操作","question_title":""})
+                operation_error_stats[vo["question_id"]]["answer_sum"]+=1
 
+                Question=OperationQuestionModel(vo["question_id"])
+                if Question:#存在一种情况就是作答还存在但原题已经删除了，因此根据这个作答是找不到原题的
+                    operation_error_stats[vo["question_id"]]["question_title"] = Question.title
+                    if vo["score"] != Question.max_score:
+                        error_question.append(vo)  
+                        #错过的+1
+                        operation_error_stats[vo["question_id"]]["error_sum"]+=1
         #两个统计字典合并
         merged_stats={}
         merged_stats.update({f"single_choice:{k}":v for k,v in single_choice_error_stats.items()})
         merged_stats.update({f"tf:{k}": v for k,v in tf_error_stats.items()})
+        merged_stats.update({f"operation:{k}": v for k,v in operation_error_stats.items()})
         # print("合并后的字典：",merged_stats)
         #排序
         sorted_stats = sorted(merged_stats.items(),key= lambda x:(x[1]["answer_sum"],x[1]["error_sum"]/x[1]["answer_sum"]),reverse=True)

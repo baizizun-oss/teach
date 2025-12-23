@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class OperationQuestionModel:
 
-    score=15
+    max_score=15
     title=""
     material_path=""
     module_id=0
@@ -22,6 +22,7 @@ class OperationQuestionModel:
     picture=""
     correct_answer=""
     score_rules= ""
+
 
     def __init__(self, question_id):
         if question_id is None:
@@ -40,10 +41,12 @@ class OperationQuestionModel:
             ,module.name as module_name
             ,knowledge.name as knowledge_name
             ,question.difficult as difficult
-
+            ,question.score as max_score
             from operation_question as question  join module on module.id = question.module join knowledge on knowledge.id = question.knowledge where question.id=?
             """
         question=Common.find("sangao",sql,(question_id,))
+        if question is None:
+            return None
         self.question_id = question["id"]
         self.material_path = question["material"]
         self.picture = question["picture"]
@@ -55,7 +58,7 @@ class OperationQuestionModel:
         self.knowledge_id = question["knowledge_id"]
         self.knowledge_name = question["knowledge_name"]
         self.difficult = question["difficult"]
-  
+        self.max_score = question["max_score"]
   
     def to_dict(self):
         return {
@@ -69,6 +72,7 @@ class OperationQuestionModel:
             "knowledge_id": self.knowledge_id,
             "score_rules": self.score_rules,
             "knowledge_name":self.knowledge_name,
-            "difficult":self.difficult
+            "difficult":self.difficult,
+            "max_score":self.max_score
         }
 

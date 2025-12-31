@@ -5,8 +5,9 @@ import requests
 import warnings
 warnings.filterwarnings('ignore')
 import time
-import myportal.common as common
+import common.CommonModel as Common
 import os
+import config
 
 class indexHandler(tornado.web.RequestHandler):
     def get(self):
@@ -20,7 +21,7 @@ class indexHandler(tornado.web.RequestHandler):
         # if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
         #     print("没有cookie")
         #     self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-        #     #self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+        #     #self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         # else:
         #     self.render("fileserver/templates/index.html")
         self.render("fileserver/templates/index.html")
@@ -33,7 +34,7 @@ class addHandler(tornado.web.RequestHandler):
 
         print("进入fileserver_index_doubleadd_post 方法了")
         #上传文件的处理
-        UPLOAD_FILE_PATH = os.path.join(common.BASE_DIR,"sangao","sangao","templates","File","upload","")
+        UPLOAD_FILE_PATH = os.path.join(config.BASE_DIR,"sangao","sangao","templates","File","upload","")
         
         #username = self.get_argument('username', 'anonymous')
         if self.request.files.get('file', None):
@@ -57,7 +58,7 @@ class addHandler(tornado.web.RequestHandler):
         	,"+data["ctime"]+",1 \
         	,'uncomfirmed','public')"
         print("sql语句:"+sql)
-        conn=sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn=sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         result=conn.cursor().execute(sql)
         print("result:",result)
         
@@ -103,7 +104,7 @@ class delHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入warehouse_index_add_get")
         sql="delete from file where id="+self.get_argument("id")
-        result=common.execute("sangao",sql)
+        result=Common.execute("sangao",sql)
         if result:
             self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("删除成功！");</script></body></html>')
         else:
@@ -201,7 +202,7 @@ class doubleEditHandler(tornado.web.RequestHandler):
         if self.get_argument("start_display_time_morning")==time.strftime("%H"):
             start_display_time_hour=self.get_argument("start_display_time_afternoon")
         else:
-            	start_display_time_hour=self.get_argument("start_display_time_morning")
+            start_display_time_hour=self.get_argument("start_display_time_morning")
         start_display_time = self.get_argument("start_display_time_year")+","+self.get_argument("start_display_time_month")+","+start_display_time_day+","+start_display_time_hour
         
         
@@ -276,7 +277,7 @@ class detailHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入filehouse_select_get方法了")
         sql="select * from file where id = "+self.get_argument("id")
-        file=common.find("baigaopeng_fileserver",sql)
+        file=Common.find("baigaopeng_fileserver",sql)
         self.render("fileserver/templates/detail.html"
         	,file=file
         	)
@@ -304,34 +305,34 @@ class listsHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入fileserver_lists")
         #访问统计
-        # common.tongji("fileserver_lists")
+        # Common.tongji("fileserver_lists")
         if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
             print("没有cookie")
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-            #self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+            #self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         else:
             
             # sql="select * from file"
-            # files = common.select("sangao",sql)
+            # files = Common.select("sangao",sql)
             # for vo in files:
             #     if "fileserver_upload" in vo["filepath"]:
             #         vo["filepath"] = "File/upload"+vo["filepath"][17:]
             #         print("修改后：",vo["filepath"])
             #         sql="update file set filepath = '"+vo["filepath"]+"' where id ="+str(vo["id"])
-            #         result=common.execute("sangao",sql)
+            #         result=Common.execute("sangao",sql)
             #         if result==False:
             #             break
 
 
             sql="select * from file where access_level='public'"
-            files=common.select("sangao",sql)
+            files=Common.select("sangao",sql)
             print("files:",files)
             if files[0]["id"] is None:
                 files[0]={'id': 0, 'easy_memorize_name': "", 'uid': self.get_argument("uid"), 'filepath': "", 'download_number': 0, 'ctime': 0, 'confirmed': "",'liyonglv':0}
             else:
                 for vo in files:
                     vo["liyonglv"]=int(vo["download_number"]/((time.time()-vo["ctime"])/86400)*10000)
-            self.render(os.path.join(common.BASE_DIR,"sangao","templates","File","lists.html")
+            self.render(os.path.join(config.BASE_DIR,"sangao","templates","File","lists.html")
                         ,files=files
                         )
 
@@ -339,19 +340,19 @@ class listHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入fileserver_lists")
         #访问统计
-        common.tongji("fileserver_lists")
+        Common.tongji("fileserver_lists")
         if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
             print("没有cookie")
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-            #self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+            #self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         else:
             sql="select * from file where uid = "+self.get_argument("uid")+" order by access_level"
-            files=common.select("sangao",sql)
+            files=Common.select("sangao",sql)
             print("files:",files)
             if files[0]["id"] is None:
                 files[0]={'id': 0, 'easy_memorize_name': "", 'uid': self.get_argument("uid"), 'filepath': "", 'download_number': 0, 'ctime': 0, 'confirmed': "",'access_level':'public'}
     
-            self.render(os.path.join(common.BASE_DIR,"sangao","templates","File","list.html")
+            self.render(os.path.join(config.BASE_DIR,"sangao","templates","File","list.html")
                         ,files=files
                         )
 
@@ -360,14 +361,14 @@ class setPublicHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入fileserver_lists")
         #访问统计
-        common.tongji("fileserver_lists")
+        Common.tongji("fileserver_lists")
         if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
             print("没有cookie")
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-            #self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+            #self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         else:
             sql="update file set access_level= 'public' where id ="+self.get_argument("id")
-            result=common.execute("sangao",sql)
+            result=Common.execute("sangao",sql)
             if result==False:
                 self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("系统出错，请联系老师！");</script></body></html>') 
             else:
@@ -378,14 +379,14 @@ class setPrivateHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入fileserver_lists")
         #访问统计
-        common.tongji("fileserver_lists")
+        Common.tongji("fileserver_lists")
         if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
             print("没有cookie")
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-            #self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+            #self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         else:
             sql="update file set access_level= 'private' where id ="+self.get_argument("id")
-            result=common.execute("sangao",sql)
+            result=Common.execute("sangao",sql)
             if result==False:
                 self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("系统出错，请联系老师！");</script></body></html>') 
             else:

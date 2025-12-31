@@ -1,7 +1,8 @@
-#!/home/bgp1984/projects/server_184/server_181/projects/sangao/.venv/bin/python
+#!/home/bgp1984/projects/server_181/projects/sangao/.venv/bin/python
+# -*- coding: utf-8 -*-
+import re
 import sys
 from charset_normalizer.cli import cli_detect
 if __name__ == '__main__':
-    if sys.argv[0].endswith('.exe'):
-        sys.argv[0] = sys.argv[0][:-4]
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
     sys.exit(cli_detect())

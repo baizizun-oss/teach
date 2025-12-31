@@ -19,7 +19,7 @@ def install_nfs_utils():
     """安装NFS客户端工具"""
     print("📦 正在安装NFS客户端工具...")
     try:
-        run_cmd(["sudo", "apt", "update"])
+        # run_cmd(["sudo", "apt", "update"])
         run_cmd(["sudo", "apt", "install", "-y", "nfs-common"])
         print("✅ NFS客户端工具安装完成")
     except Exception as e:
@@ -68,9 +68,9 @@ def mount_nfs(server_ip, server_path, mount_point):
 def install_nfs():
     """主函数：安装并挂载NFS目录"""
     # NFS服务器配置
-    NFS_SERVER_IP = "192.168.100.184"
-    NFS_SERVER_PATH = "/home/bgp1984/projects/server_184/projects/sangao/common/static/upload/operation_question/files"
-    LOCAL_MOUNT_POINT = os.path.join(os.path.dirname(__file__),"..","projects","sangao","sangao","templates","Answer","upload","operation_question","files")
+    NFS_SERVER_IP = "192.168.100.181"
+    NFS_SERVER_PATH = "/home/bgp1984/projects/nfs_server/server_181"
+    LOCAL_MOUNT_POINT = os.path.join(os.path.dirname(__file__),"..","projects","sangao","upload")
 
     print(f"🔧 开始配置NFS挂载: {NFS_SERVER_IP}:{NFS_SERVER_PATH} -> {LOCAL_MOUNT_POINT}")
     

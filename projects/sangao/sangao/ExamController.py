@@ -8,13 +8,13 @@ import uuid
 
 warnings.filterwarnings('ignore')
 import time
-import myportal.common as common
 import sqlite3
 import os
 import re
 import subprocess
 import tempfile
 import openpyxl  # 需要 pip install openpyxl
+import config
 import logging
 logger = logging.getLogger(__name__)
 class commonHandler():
@@ -38,7 +38,7 @@ class questionListsHandler(tornado.web.RequestHandler):
         conn.commit()
         conn.close()
         # 统计模块结束
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         sql = "select * from exam_paper"
         cursor = conn.cursor()
         cursor.execute(sql)
@@ -52,7 +52,7 @@ class examPaperListsHandler(tornado.web.RequestHandler):
         if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
             print("没有cookie")
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-            #self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+            #self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         else:
 
             # 统计模块开始
@@ -86,7 +86,7 @@ class examPaperListsHandler(tornado.web.RequestHandler):
                     if question["question_type"]==5:#填空
                         exam_papers[key]["total"]+=1
             logger.info("exam_papers: %s ",exam_papers)
-            self.render(os.path.join(common.BASE_DIR,"sangao","templates","Exam","exam_paper_lists.html"),exam_papers=exam_papers)
+            self.render(os.path.join(config.BASE_DIR,"sangao","templates","Exam","exam_paper_lists.html"),exam_papers=exam_papers)
 
 
 class examPaperAddHandler(tornado.web.RequestHandler):
@@ -101,7 +101,7 @@ class examPaperAddHandler(tornado.web.RequestHandler):
         data["author"]=self.get_argument("author")
         sql="insert into exam_paper(title,author,ctime) values('"+data["title"]+"','"+data["author"]+"',"+data["ctime"]+")"
         print("sql语句:" + sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         result = conn.cursor().execute(sql)
         print("result:", result)
 
@@ -157,7 +157,7 @@ class examPaperDelHandler(tornado.web.RequestHandler):
         print("进入warehouse_index_add_get")
         commonHandler.tongji("exam_paper_del")
         sql = "delete from exam_paper where id=" + self.get_argument("id")
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         result = conn.cursor().execute(sql)
         conn.commit()
         print("result结果为:", result)
@@ -171,7 +171,7 @@ class editHandler(tornado.web.RequestHandler):
         if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
             print("没有cookie")
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
-            #self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+            #self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         else:        
             single_choice_questions={}
             true_false_questions={}
@@ -210,7 +210,7 @@ class editHandler(tornado.web.RequestHandler):
             print("结果集operation_questions",operation_questions)
             print("结果集fill_blank_questions",fill_blank_questions)
             
-            self.render(os.path.join(common.BASE_DIR,"sangao","templates","Exam","edit.html")
+            self.render(os.path.join(config.BASE_DIR,"sangao","templates","Exam","edit.html")
             ,user_id=self.get_cookie("user_id")
             ,exam_paper_id=self.get_argument("id")
             ,operation_questions=operation_questions
@@ -335,7 +335,7 @@ class handinHandler(RequestHandler):
                 self.write(f"操作题 {qid} 未上传文件")
                 return
 
-            upload_dir = os.path.join(common.BASE_DIR, "sangao", "templates", "Exam", "upload")
+            upload_dir = os.path.join(config.BASE_DIR, "sangao", "templates", "Exam", "upload")
             os.makedirs(upload_dir, exist_ok=True)
             filename = str(uuid.uuid4()) + os.path.splitext(files[0]['filename'])[1]
             file_path = os.path.join(upload_dir, filename)
@@ -416,7 +416,7 @@ class handinHandler(RequestHandler):
         if not table:
             return None
 
-        db_path = os.path.join(common.BASE_DIR, "db", f"{db_name}.db")
+        db_path = os.path.join(config.BASE_DIR, "db", f"{db_name}.db")
         try:
             conn = sqlite3.connect(db_path)
             conn.row_factory = sqlite3.Row
@@ -436,14 +436,14 @@ class errorRankingHandler(tornado.web.RequestHandler):
     def post(self):
         sql="insert into examinee_answer(ctime,student_name,one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,fourteen,fifteen,sixteen,seventeen,eighteen,nineteen,twenty,twentyone,twentytwo,exam_paper_id,grade,class) values("+data["ctime"]+",'"+data["student_name"]+"','"+data["one"]+"','"+data["two"]+"','"+data["three"]+"','"+data["four"]+"','"+data["five"]+"','"+data["six"]+"','"+data["seven"]+"','"+data["eight"]+"','"+data["nine"]+"','"+data["ten"]+"','"+data["eleven"]+"','"+data["twelve"]+"','"+data["thirteen"]+"','"+data["fourteen"]+"','"+data["fifteen"]+"','"+data["sixteen"]+"','"+data["seventeen"]+"','"+data["eighteen"]+"','"+data["nineteen"]+"','"+data["twenty"]+"','"+data["twentyone"]+"','"+data["twentytwo"]+"',"+self.get_argument("exam_paper_id")+",'"+self.get_argument("grade")+"','"+self.get_argument("class")+"')";
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
     def get(self):
         sql="select * from exam_paper"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()

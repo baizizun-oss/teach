@@ -3,11 +3,12 @@ import sqlite3
 import warnings
 import os
 import uuid
+import config
 
 warnings.filterwarnings('ignore')
 import time
-import myportal.common as common
 import json
+import common.CommonModel as Common
 from .QuestionModel import (
     SingleChoiceQuestionModel,
     MultipleChoiceQuestionModel,
@@ -28,12 +29,12 @@ class listsHandler(tornado.web.RequestHandler):
         conn.commit()
         conn.close()
         # 统计模块结束
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         sql = "select * from single_choice_question"
-        single_choice_questions=common.select("sangao", sql)
+        single_choice_questions=Common.select("sangao", sql)
         print(single_choice_questions)
         sql = "select * from tf_question"
-        tf_questions=common.select("sangao", sql)
+        tf_questions=Common.select("sangao", sql)
         print(tf_questions)
         self.render("sangao\\templates\\Question\\lists.html",single_choice_questions=single_choice_questions,tf_questions=tf_questions)
 
@@ -117,7 +118,7 @@ class handinHandler(RequestHandler):
                     return
                 answer_records.append((int(qid), "fill_blank", ans))
         elif question_type == "operation":
-            upload_dir = os.path.join(common.BASE_DIR, "sangao", "templates", "Question", "upload")
+            upload_dir = os.path.join(config.BASE_DIR, "sangao", "templates", "Question", "upload")
             os.makedirs(upload_dir, exist_ok=True)
             for qid in qids:
                 files = self.request.files.get(f"file_{qid}", [])
@@ -185,7 +186,7 @@ class handinHandler(RequestHandler):
 
             total_score += score
 
-            common.execute("sangao", """
+            Common.execute("sangao", """
                 INSERT INTO student_answer(
                     student_id, question_id, answer, ctime, question_type, 
                     score, exam_paper_id, submission_id, source, is_correct
@@ -209,7 +210,7 @@ class handinHandler(RequestHandler):
 
         # 特殊处理操作题代码内容
         if question_type == "operation":
-            upload_dir = os.path.join(common.BASE_DIR, "sangao", "templates", "Question", "upload")
+            upload_dir = os.path.join(config.BASE_DIR, "sangao", "templates", "Question", "upload")
             for q in questions:
                 try:
                     with open(os.path.join(upload_dir, q["student_answer"]), 'r', encoding='utf-8') as f:
@@ -220,7 +221,7 @@ class handinHandler(RequestHandler):
 
         # # 渲染结果
         # self.render(
-        #     os.path.join(common.BASE_DIR, "sangao", "templates", "Question", "answer_lists.html"),
+        #     os.path.join(config.BASE_DIR, "sangao", "templates", "Question", "answer_lists.html"),
         #     module=module,
         #     question_type=question_type,
         #     single_choice_questions=questions if question_type == "single_choice" else [],
@@ -249,11 +250,11 @@ class handinHandler(RequestHandler):
         table = table_map[qtype]
 
         # 获取题目
-        questions = common.select("sangao", f"SELECT * FROM {table} WHERE id IN ({qids_str})")
+        questions = Common.select("sangao", f"SELECT * FROM {table} WHERE id IN ({qids_str})")
         
         # 获取学生答案
         student_id = self.get_cookie("user_id")
-        student_answers = common.select("sangao", f"""
+        student_answers = Common.select("sangao", f"""
             SELECT question_id, answer AS student_answer 
             FROM student_answer 
             WHERE question_id IN ({qids_str}) AND student_id = '{student_id}'
@@ -288,7 +289,7 @@ class getModuleKnowledge(tornado.web.RequestHandler):
         # 查询任务数据
         try:
             module=self.get_argument("module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id="+module)
+            knowledges=Common.select("sangao","select * from knowledge where belong_module_id="+module)
             print(f"knowledges:{knowledges}")
             serializable_data = self._make_serializable(knowledges)
             print(f"json_data:{serializable_data}")
@@ -333,35 +334,35 @@ class changeBatchHandler(tornado.web.RequestHandler):
                 sql = f"SELECT * FROM single_choice_question ORDER BY RANDOM() LIMIT {number}"
             else:
                 sql = f"SELECT * FROM single_choice_question WHERE module='{module}' ORDER BY RANDOM() LIMIT {number}"
-            single_choice_questions = common.select("sangao", sql)
+            single_choice_questions = Common.select("sangao", sql)
             
         elif question_type == "true_false":
             if module == "all":
                 sql = f"SELECT * FROM tf_question ORDER BY RANDOM() LIMIT {number}"
             else:
                 sql = f"SELECT * FROM tf_question WHERE module='{module}' ORDER BY RANDOM() LIMIT {number}"
-            true_false_questions = common.select("sangao", sql)
+            true_false_questions = Common.select("sangao", sql)
             
         elif question_type == "multiple_choice":
             if module == "all":
                 sql = f"SELECT * FROM multiple_choice_question ORDER BY RANDOM() LIMIT {number}"
             else:
                 sql = f"SELECT * FROM multiple_choice_question WHERE module='{module}' ORDER BY RANDOM() LIMIT {number}"
-            multiple_choice_questions = common.select("sangao", sql)
+            multiple_choice_questions = Common.select("sangao", sql)
             
         elif question_type == "fill_blank":
             if module == "all":
                 sql = f"SELECT * FROM fill_blank_question ORDER BY RANDOM() LIMIT {number}"
             else:
                 sql = f"SELECT * FROM fill_blank_question WHERE module='{module}' ORDER BY RANDOM() LIMIT {number}"
-            fill_blank_questions = common.select("sangao", sql)
+            fill_blank_questions = Common.select("sangao", sql)
             
         elif question_type == "operation":
             if module == "all":
                 sql = f"SELECT * FROM operation_question ORDER BY RANDOM() LIMIT {number}"
             else:
                 sql = f"SELECT * FROM operation_question WHERE module='{module}' ORDER BY RANDOM() LIMIT {number}"
-            operation_questions = common.select("sangao", sql)
+            operation_questions = Common.select("sangao", sql)
         
         # # 返回JSON格式的数据
         # self.set_header("Content-Type", "application/json; charset=utf-8")
@@ -370,7 +371,7 @@ class changeBatchHandler(tornado.web.RequestHandler):
         #     "question_type": question_type
         # })
         logger.info(f"single_choice_questions:{single_choice_questions}")
-        self.render(os.path.join(common.BASE_DIR,"sangao","templates","Question","result_ajax.html"),
+        self.render(os.path.join(config.BASE_DIR,"sangao","templates","Question","result_ajax.html"),
                     single_choice_questions=single_choice_questions,
                     true_false_questions=true_false_questions,
                     multiple_choice_questions=multiple_choice_questions,
@@ -385,14 +386,14 @@ class errorRankingHandler(tornado.web.RequestHandler):
     def post(self):
         sql="insert into examinee_answer(ctime,student_name,one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,fourteen,fifteen,sixteen,seventeen,eighteen,nineteen,twenty,twentyone,twentytwo,exam_paper_id,grade,class) values("+data["ctime"]+",'"+data["student_name"]+"','"+data["one"]+"','"+data["two"]+"','"+data["three"]+"','"+data["four"]+"','"+data["five"]+"','"+data["six"]+"','"+data["seven"]+"','"+data["eight"]+"','"+data["nine"]+"','"+data["ten"]+"','"+data["eleven"]+"','"+data["twelve"]+"','"+data["thirteen"]+"','"+data["fourteen"]+"','"+data["fifteen"]+"','"+data["sixteen"]+"','"+data["seventeen"]+"','"+data["eighteen"]+"','"+data["nineteen"]+"','"+data["twenty"]+"','"+data["twentyone"]+"','"+data["twentytwo"]+"',"+self.get_argument("exam_paper_id")+",'"+self.get_argument("grade")+"','"+self.get_argument("class")+"')";
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
     def get(self):
         sql="select * from exam_paper"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
@@ -405,14 +406,14 @@ class singleChoiceAddHandler(tornado.web.RequestHandler):
         sql="insert into examinee_answer(ctime,student_name,one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,fourteen,fifteen,sixteen,seventeen,eighteen,nineteen,twenty,twentyone,twentytwo,exam_paper_id,grade,class) values("+data["ctime"]+",'"+data["student_name"]+"','"+data["one"]+"','"+data["two"]+"','"+data["three"]+"','"+data["four"]+"','"+data["five"]+"','"+data["six"]+"','"+data["seven"]+"','"+data["eight"]+"','"+data["nine"]+"','"+data["ten"]+"','"+data["eleven"]+"','"+data["twelve"]+"','"+data["thirteen"]+"','"+data["fourteen"]+"','"+data["fifteen"]+"','"+data["sixteen"]+"','"+data["seventeen"]+"','"+data["eighteen"]+"','"+data["nineteen"]+"','"+data["twenty"]+"','"+data["twentyone"]+"','"+data["twentytwo"]+"',"+self.get_argument("exam_paper_id")+",'"+self.get_argument("grade")+"','"+self.get_argument("class")+"')";
         sql="insert into single_choice_question()"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
     def get(self):
         sql="select * from exam_paper"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
@@ -441,7 +442,7 @@ class getModuleKnowledge(tornado.web.RequestHandler):
         # 查询任务数据
         try:
             module=self.get_argument("module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id="+module)
+            knowledges=Common.select("sangao","select * from knowledge where belong_module_id="+module)
             print(f"knowledges:{knowledges}")
             serializable_data = self._make_serializable(knowledges)
             print(f"json_data:{serializable_data}")
@@ -461,9 +462,9 @@ class selectHandler(tornado.web.RequestHandler):
             self.write("没有登录或者已经登录过期，请点击<a href='/sangao/Index/login'>登录</a>")
         else:
             #获取所有知识点
-            knowledges=common.select("sangao","select * from knowledge")
-            modules = common.select("sangao","select * from module")
-            self.render(os.path.join(common.BASE_DIR,"sangao","templates","Question","select.html"),knowledges=knowledges,modules=modules)
+            knowledges=Common.select("sangao","select * from knowledge")
+            modules = Common.select("sangao","select * from module")
+            self.render(os.path.join(config.BASE_DIR,"sangao","templates","Question","select.html"),knowledges=knowledges,modules=modules)
 
     def post(self):
         if self.get_cookie("user_id",None) ==None:#如果没有cookie就去登录
@@ -495,7 +496,7 @@ class selectHandler(tornado.web.RequestHandler):
             if data["knowledge"]!="所有":
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"            
 
-            single_choice_questions=common.select("sangao",sql)
+            single_choice_questions=Common.select("sangao",sql)
         if self.get_argument("type")=="true_false":
             if data["module"]=="all":
                 sql="select * from tf_question"
@@ -503,25 +504,25 @@ class selectHandler(tornado.web.RequestHandler):
                 sql="select * from tf_question where module='"+data["module"]+"'"
             if data["knowledge"]!="所有":
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"  
-            true_false_questions=common.select("sangao",sql)
+            true_false_questions=Common.select("sangao",sql)
         if self.get_argument("type")=="operation":
             sql="select * from operation_question where difficult='"+data["difficult"]+"'"
             if data["module"]!="all":
                 sql=sql+"and module='"+data["module"]+"'"
             sql=sql+" order by random() limit "+data["number"]
-            operation_questions=common.select("sangao",sql) 
+            operation_questions=Common.select("sangao",sql) 
         if self.get_argument("type")=="multiple_choice":
             if data["module"]=="all":
                 sql="select * from multiple_choice_question"
             else:
                 sql="select * from multiple_choice_question where module='"+data["module"]+"'"
-            multiple_choice_questions=common.select("sangao",sql)     
+            multiple_choice_questions=Common.select("sangao",sql)     
         if self.get_argument("type")=="fill_blank":
             if data["module"]=="all":
                 sql="select * from fill_blank_question"
             else:
                 sql="select * from fill_blank_question where module='"+data["module"]+"'"
-            fill_blank_questions=common.select("sangao",sql)  
+            fill_blank_questions=Common.select("sangao",sql)  
 
         print("结果集multiple_choice_questions",multiple_choice_questions)                                  
         print("结果集single_choice_questions",single_choice_questions)       
@@ -529,7 +530,7 @@ class selectHandler(tornado.web.RequestHandler):
         print("结果集operation_questions",operation_questions)
         print("结果集fill_blank_questions",fill_blank_questions)
         
-        self.render(os.path.join(common.BASE_DIR,"sangao","templates","Question","result.html")
+        self.render(os.path.join(config.BASE_DIR,"sangao","templates","Question","result.html")
         ,module=data["module"]
         ,question_type=self.get_argument("type")
         ,number=data["number"]

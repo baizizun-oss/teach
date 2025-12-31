@@ -56,6 +56,7 @@ def deploy_sangao():
              "-i", "https://pypi.tuna.tsinghua.edu.cn/simple",
              "--trusted-host", "pypi.tuna.tsinghua.edu.cn"])
 
+
     # 安装依赖：优先使用项目根目录下的 requirements.txt
     req_file = proj_dir / "requirements.txt"
     if req_file.exists():
@@ -65,7 +66,6 @@ def deploy_sangao():
                  "--trusted-host", "pypi.tuna.tsinghua.edu.cn"], cwd=proj_dir)
     else:
         print("ℹ️  未找到 requirements.txt，安装项目所需的所有依赖...")
-        # 安装Dockerfile中指定的所有Python库
         packages = [
             "tornado",
             "requests", 
@@ -75,18 +75,38 @@ def deploy_sangao():
             "aiohttp", 
             "openpyxl"
         ]
-        
-        # 使用清华源安装
+
+        # 清华源参数
+        pip_args = [
+            "-i", "https://pypi.tuna.tsinghua.edu.cn/simple",
+            "--trusted-host", "pypi.tuna.tsinghua.edu.cn"
+        ]
+
         for package in packages:
+            # 尝试导入对应的模块（注意：包名和模块名通常一致）
+            # 特殊情况：python-dateutil 的模块名是 dateutil
+            module_name = package
+            if package == "python-dateutil":
+                module_name = "dateutil"
+
+            print(f"🔍 检查 {package} 是否已安装...")
+            check_cmd = [str(VENV_PYTHON), "-c", f"import {module_name}"]
+            check_res = run_cmd(check_cmd, check=False)
+
+            if check_res.returncode == 0:
+                print(f"✅ {package} 已安装，跳过")
+                continue
+
             print(f"📡 安装 {package}，使用源: https://pypi.tuna.tsinghua.edu.cn/simple")
             res = run_cmd([
-                str(VENV_PYTHON), "-m", "pip", "install", package,
-                "-i", "https://pypi.tuna.tsinghua.edu.cn/simple",
-                "--trusted-host", "pypi.tuna.tsinghua.edu.cn"
-            ], check=False)
+                str(VENV_PYTHON), "-m", "pip", "install", package
+            ] + pip_args, check=False)
+
             if res.returncode != 0:
-                print(f"❌ 无法安装 {package}，请检查网络！")
+                print(f"❌ 无法安装 {package}，请检查网络或包名！")
                 sys.exit(1)
+
+
 
     # === 验证关键模块是否可导入 ===
     print("🔍 验证关键模块是否安装成功...")

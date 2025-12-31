@@ -6,11 +6,9 @@ import tornado.web
 import os
 
 import config
-import sangao.DesignController
 import sangao.IndexController
 import sangao.ExamController
 import sangao.TeachController
-import sangao.NoteController
 import sangao.QuestionController
 import sangao.FileController
 
@@ -45,7 +43,6 @@ if __name__ == '__main__':
         , (r'/sangao', sangao.IndexController.loginHandler)
         , (r'/sangao/Index/login', sangao.IndexController.loginHandler)
         , (r'/sangao/Index/register', sangao.IndexController.registerHandler)
-        , (r'/sangao/Design/edit', sangao.DesignController.editHandler)
         , (r'/sangao/Exam/exam_paper_lists', sangao.ExamController.examPaperListsHandler)
         , (r'/sangao/Exam/edit', sangao.ExamController.editHandler)
         , (r'/sangao/Exam/handin', sangao.ExamController.handinHandler)
@@ -60,16 +57,7 @@ if __name__ == '__main__':
         , (r'/sangao/File/setPublic', sangao.FileController.setPublicHandler)
         , (r'/sangao/File/setPrivate', sangao.FileController.setPrivateHandler)
         , (r'/sangao/Teach/list', sangao.TeachController.listHandler)
-        , (r'/sangao/Design/lists', sangao.DesignController.listsHandler)
-        , (r'/sangao/Design/add', sangao.DesignController.addHandler)
-        , (r'/sangao/Design/del', sangao.DesignController.delHandler)
-        , (r'/sangao/Note/doubleEdit', sangao.NoteController.doubleEditHandler)
-        , (r'/sangao/Note/edit', sangao.NoteController.editHandler)
-        , (r'/sangao/Note/select', sangao.NoteController.selectHandler)
-        , (r'/sangao/Note/doubleAdd', sangao.NoteController.doubleAddHandler)
-        , (r'/sangao/Note/add', sangao.NoteController.addHandler)
-        , (r'/sangao/Note/index', sangao.NoteController.indexHandler)
-        , (r'/sangao/Note/detail', sangao.NoteController.detailHandler)
+
         , (r'/sangao/Question/select', sangao.QuestionController.selectHandler)
         , (r'/sangao/Question/add', sangao.QuestionController.addHandler)
         , (r'/sangao/Question/lists', sangao.QuestionController.listsHandler)

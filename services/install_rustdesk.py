@@ -61,7 +61,7 @@ def install_rustdesk():
     try:
         # 安装依赖
         print("🔧 更新并安装依赖...")
-        run_cmd(['sudo', 'apt', 'update'])
+        # run_cmd(['sudo', 'apt', 'update'])
         run_cmd(['sudo', 'apt', 'install', '-y', 'wget', 'curl', 'ca-certificates'])
 
         # 安装本地 deb

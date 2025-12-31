@@ -15,31 +15,32 @@ import random
 import http.client
 import json
 import sqlite3
+import config
+import common.CommonModel as Common
 
-import myportal.common as common
 
 class indexHandler(tornado.web.RequestHandler):
     def get(self):
         if self.get_cookie("administrator",None) !="admin":
             self.redirect("sangao_admin/login")
         else:
-            self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","index.html"))
+            self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","index.html"))
 
 class loginHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Index","login.html"))
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Index","login.html"))
     def post(self):
         if self.get_argument("username") == "bgp1984" and self.get_argument("password") == "founder#021665":
             self.set_cookie("administrator", "admin")
             self.redirect("index")
         else:
-            self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Index","login.html"))
+            self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Index","login.html"))
 
 
 class clickStatisticsHandler(tornado.web.RequestHandler):
     def get(self):
         sql = "select click.id as id,click.click_time,click.click_action,user.name as name from click,user where click.user_id=user.id"
-        clicks=common.select("sangao",sql)
+        clicks=Common.select("sangao",sql)
         self.render("sangao_admin/templates/click_statistics.html",clicks=clicks)
 
 
@@ -47,7 +48,7 @@ class clickStatisticsHandler(tornado.web.RequestHandler):
 class quickSelectHandler(tornado.web.RequestHandler):
     def get(self):
         # 统计模块开始
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         sql = "insert into click(click_time,click_action) values(" + str(int(time.time())) + ",'quick_select')"
         result = conn.cursor().execute(sql)
         conn.commit()
@@ -55,17 +56,17 @@ class quickSelectHandler(tornado.web.RequestHandler):
         # 统计模块结束
         # self.render("myportal/templates/Index/quick_select.html")
         print("进入myportal_index_quickselect_get方法了")
-        # tasks=sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db")).cursor().execute("select * from task where id="+self.get_argument("id"))
+        # tasks=sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db")).cursor().execute("select * from task where id="+self.get_argument("id"))
         # for vo in tasks:
         # task=vo
 
         # print("tasks字符集：",tasks)
         # print("task字符集:",task)
-        impedes = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db")).cursor().execute(
+        impedes = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db")).cursor().execute(
             "select * from impede where status = 'abled'")
         # for vo in impedes:
         # print("impedes[0]:",vo[0])
-        challenges = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db")).cursor().execute(
+        challenges = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db")).cursor().execute(
             "select * from challenge C where status='abled' order by (select count(*) from task T where T.challenge=C.name) desc")
         # for vi in challenges:
         # print("challenges[0]:",vi[0])
@@ -172,7 +173,7 @@ class quickSelectHandler(tornado.web.RequestHandler):
 class clickSelectHandler(tornado.web.RequestHandler):
     def get(self):
         # 统计模块开始
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         sql = "insert into click(click_time,click_action) values(" + str(int(time.time())) + ",'click_select')"
         result = conn.cursor().execute(sql)
         conn.commit()
@@ -194,7 +195,7 @@ class clickSelectHandler(tornado.web.RequestHandler):
         # sql="insert into holiday(start_time,end_time) values("+data["start_time"]+","+data["end_time"]+")"
         sql = "select count(*) as fangwen_num,click_action from click group by click_action"
         print("sql sentence:", sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         for row in cursor.fetchall():  # 从fetchall中读取操作 print(row)
@@ -214,7 +215,7 @@ class clickSelectHandler(tornado.web.RequestHandler):
 
 class operationOrderHandler(tornado.web.RequestHandler):
     def get(self):
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         sql = "insert into click(click_time,click_action) values(" + str(int(time.time())) + ",'operation_order')"
         result = conn.cursor().execute(sql)
         conn.commit()
@@ -228,7 +229,7 @@ class operationOrderHandler(tornado.web.RequestHandler):
         # holidays=sqlite3.connect("")
         # result = cursor.execute(sql)
         # holidays = cursor.fetchall()
-        holidays = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db")).cursor().execute(
+        holidays = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db")).cursor().execute(
             "select * from holiday")
 
         print("holidays字符集:", holidays)
@@ -630,16 +631,16 @@ class operationOrderHandler(tornado.web.RequestHandler):
 class allSelectHandler(tornado.web.RequestHandler):
     def get(self):
         # 统计模块开始
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         sql = "insert into click(click_time,click_action) values(" + str(int(time.time())) + ",'quick_select')"
         result = conn.cursor().execute(sql)
         conn.commit()
         conn.close()
         # 统计模块结束
 
-        impedes = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db")).cursor().execute(
+        impedes = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db")).cursor().execute(
             "select * from impede where status = 'abled'")
-        challenges = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db")).cursor().execute(
+        challenges = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db")).cursor().execute(
             "select * from challenge C where status='abled' order by (select count(*) from task T where T.challenge=C.name) desc")
         self.render("myportal/templates/Index/all_select.html"
                     , impedes=impedes

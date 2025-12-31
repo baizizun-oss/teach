@@ -16,7 +16,8 @@ import http.client
 import json
 import sqlite3
 import re
-import myportal.common as common
+import common.CommonModel as Common
+import config
 
 class indexHandler(tornado.web.RequestHandler):
     def get(self):
@@ -43,9 +44,9 @@ class loginHandler(tornado.web.RequestHandler):
     def get(self):
         #登录判断
         if self.get_cookie("student","") == "":#如果没有cookie说明还没有登录
-            self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html"))
+            self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html"))
         else:
-            self.render(os.path.join(os.path.join(common.BASE_DIR,"sangao","templates","Index","index.html")))
+            self.render(os.path.join(os.path.join(config.BASE_DIR,"sangao","templates","Index","index.html")))
 
     def post(self):
         post_data = self.request.arguments
@@ -63,18 +64,18 @@ class loginHandler(tornado.web.RequestHandler):
         #sql = "insert into student(name,grade,class) values('" + data["username"] + "','"    + data["password"] + "')"
         sql = "select * from user where nickname='"+data["username"]+"' and password = '"+data["password"]+"'"
         #print(sql)
-        user = common.select("sangao",sql)
+        user = Common.select("sangao",sql)
         #print(user)
         #print(user[0]["id"])
         # self.set_cookie("username", data["username"])
 
-        # self.render(os.path.join(os.path.join(common.BASE_DIR,"sangao","templates","Index","login.html")))
+        # self.render(os.path.join(os.path.join(config.BASE_DIR,"sangao","templates","Index","login.html")))
         # #self.redirect("index.html")
         if user[0]["id"]!=None:
             self.set_cookie("user_id",str(user[0]["id"]),expires=time.time()+3600)
             # self.set_cookie("status","已登录")
             self.write("登录成功！")
-            self.render(os.path.join(os.path.join(common.BASE_DIR,"sangao","templates","Index","index.html")),uid=user[0]["id"])
+            self.render(os.path.join(os.path.join(config.BASE_DIR,"sangao","templates","Index","index.html")),uid=user[0]["id"])
         else:
             self.write("密码错误或者账号不存在，请重新<a href='/sangao/Index/login'>登录</a>！")
 
@@ -89,7 +90,7 @@ class registerHandler(tornado.web.RequestHandler):
         # conn.commit()
         # conn.close()
         #统计模块结束
-        self.render(os.path.join(common.BASE_DIR,"sangao","templates","Index","register.html"))
+        self.render(os.path.join(config.BASE_DIR,"sangao","templates","Index","register.html"))
 
     def post(self):
         post_data = self.request.arguments
@@ -124,7 +125,7 @@ class registerHandler(tornado.web.RequestHandler):
         #     self.write('<html><head><title>警告</title></head><body><script type="text/javascript">window.alert("名字不要乱写！");window.location.href = "register";</script></body></html>')
         #避免同名账号
         sql = "select * from user where nickname='"+data["username"]+"'"
-        users=common.select("sangao",sql)
+        users=Common.select("sangao",sql)
         if users[0]["id"]:
             self.write('<html><head><title>警告</title></head><body><script type="text/javascript">window.alert("此账号已经被注册！");window.location.href = "register";</script></body></html>')
             return
@@ -132,7 +133,7 @@ class registerHandler(tornado.web.RequestHandler):
 
         sql = "insert into user(nickname,password,campus,class,name,status) values('"+data["username"]+"','"+data["password"]+"','"+data["campus"]+"',"+data["class"]+",'"+data["name"]+"','未授权')"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         result=cursor.execute(sql)
         conn.commit()

@@ -1,6 +1,5 @@
 # sangao/AnswerService.py
 
-import myportal.common as common
 import logging
 import os
 import re

@@ -13,7 +13,6 @@ import config
 import json  # 确保已导入
 
 warnings.filterwarnings('ignore')
-import myportal.common as common
 from sangao_admin.KnowledgeModel import Knowledge
 from sangao_admin.QuestionModel import SingleChoiceModel
 from sangao_admin.QuestionModel import KnowledgeModel
@@ -23,16 +22,15 @@ from common.CommonModel import Common
 from common.OperationQuestionModel import OperationQuestionModel
 from common.SingleChoiceQuestionModel import SingleChoiceQuestionModel
 
-
 class listsHandler(tornado.web.RequestHandler):
     def get(self):
         sql="select * from single_choice_question"
-        single_choice_questions=common.select("sangao",sql)
+        single_choice_questions=Common.select("sangao",sql)
         sql="select * from tf_question"
-        true_false_questions=common.select("sangao",sql)
+        true_false_questions=Common.select("sangao",sql)
         sql="select * from operation_question"
-        operation_questions=common.select("sangao",sql)         
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","lists.html")
+        operation_questions=Common.select("sangao",sql)         
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","lists.html")
         ,operation_questions=operation_questions
         ,true_false_questions=true_false_questions
         ,single_choice_questions=single_choice_questions)
@@ -40,14 +38,14 @@ class listsHandler(tornado.web.RequestHandler):
 class sourceListsHandler(tornado.web.RequestHandler):
     def get(self):
         sql="select * from question_source"
-        sources=common.select("sangao",sql)
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","source_lists.html"),sources=sources)
+        sources=Common.select("sangao",sql)
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","source_lists.html"),sources=sources)
 
 
 
 class addHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","add.html"))
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","add.html"))
 
 def get_upload_path(question_type, file_type="images"):
     """统一获取上传路径"""
@@ -69,54 +67,54 @@ class delHandler(tornado.web.RequestHandler):
         question_type = self.get_argument("question_type")
         #获取知识点分类
         sql="select * from knowledge"
-        knowledges=common.select("sangao",sql)
+        knowledges=Common.select("sangao",sql)
 
         if question_type == 'single_choice':
             db_name = "single_choice_question"
             sql = "select question.id as question_id,source.id as source_id,source.publicer as publicer,source.public_year as public_year,question.difficult as difficult,question.picture as picture,question.choice1 as choice1,question.choice2 as choice2,question.choice3 as choice3,question.choice4 as choice4,question.title as title,question.answer as answer,question.knowledge as knowledge,module.name as module_name,question.module as module_id,question.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as question join module on module.id = question.module join knowledge on knowledge.id= question.knowledge join question_source as source on source.id=question.source  where question.id ="+self.get_argument("question_id")            
 
-            question = common.find("sangao",sql)
-            modules=common.select("sangao","select * from module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))   
-            sources=common.select("sangao","select * from question_source")         
+            question = Common.find("sangao",sql)
+            modules=Common.select("sangao","select * from module")
+            knowledges=Common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))   
+            sources=Common.select("sangao","select * from question_source")         
             if question:
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","single_choice_edit.html"),question=question,modules=modules,knowledges=knowledges,sources=sources)
+                self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","single_choice_edit.html"),question=question,modules=modules,knowledges=knowledges,sources=sources)
             else:
                 self.write("题目不存在！")            
         if question_type == 'true_false':
             table_name = 'tf_question'
             sql = "delete from "+table_name+" where id="+self.get_argument("question_id")
-            reslut = common.execute("sangao",sql)
+            reslut = Common.execute("sangao",sql)
             if reslut:
                 self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("删除成功！");</script></body></html>')
         if question_type == 'operation':
             db_name = 'operation_question'
             sql = "select question.id as question_id,question.material as material,question.difficult as difficult,question.picture as picture,question.title as title,question.answer as answer,question.knowledge as knowledge,module.name as module_name,question.module as module_id,question.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as question join module on module.id = question.module join knowledge on knowledge.id= question.knowledge  where question.id ="+self.get_argument("question_id")            
 
-            question = common.find("sangao",sql)            
-            modules=common.select("sangao","select * from module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))                 
+            question = Common.find("sangao",sql)            
+            modules=Common.select("sangao","select * from module")
+            knowledges=Common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))                 
             # print("sql:",sql)
-            question = common.find("sangao",sql)
+            question = Common.find("sangao",sql)
             if question:
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","operation_edit.html"),question=question,modules=modules,knowledges=knowledges)                  
+                self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","operation_edit.html"),question=question,modules=modules,knowledges=knowledges)                  
         
         if question_type == 'multiple_choice':
             db_name = "multiple_choice_question"
             sql = "select question.id as question_id,question.difficult as difficult,question.picture as picture,question.choice1 as choice1,question.choice2 as choice2,question.choice3 as choice3,question.choice4 as choice4,question.choice5 as choice5,question.choice6 as choice6,question.title as title,question.answer as answer,question.knowledge as knowledge,module.name as module_name,question.module as module_id,question.knowledge as knowledge_id,knowledge.name as knowledge_name from "+db_name+ " as question join module on module.id = question.module join knowledge on knowledge.id= question.knowledge  where question.id ="+self.get_argument("question_id")            
 
-            question = common.find("sangao",sql)            
-            modules=common.select("sangao","select * from module")
-            knowledges=common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))            
+            question = Common.find("sangao",sql)            
+            modules=Common.select("sangao","select * from module")
+            knowledges=Common.select("sangao","select * from knowledge where belong_module_id ="+str(question["module_id"]))            
             # print("sql:",sql)
 
             if question:
-                self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","multiple_choice_edit.html"),question=question,modules=modules,knowledges=knowledges)   
+                self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","multiple_choice_edit.html"),question=question,modules=modules,knowledges=knowledges)   
 
         if question_type == 'fill_blank':
             table_name = 'fill_blank_question'
             sql = "delete from "+table_name+" where id="+self.get_argument("question_id")
-            reslut = common.execute("sangao",sql)
+            reslut = Common.execute("sangao",sql)
             if reslut:
                 self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("删除成功！");</script></body></html>')
 
@@ -134,11 +132,11 @@ class editHandler(tornado.web.RequestHandler):
         question_id = self.get_argument("question_id")
 
         # 获取通用数据
-        modules = common.select("sangao", "SELECT * FROM module")
-        knowledges_all = common.select("sangao", "SELECT * FROM knowledge")
+        modules = Common.select("sangao", "SELECT * FROM module")
+        knowledges_all = Common.select("sangao", "SELECT * FROM knowledge")
 
         def render_template(template, **kwargs):
-            self.render(os.path.join(common.BASE_DIR, "sangao_admin", "templates", "Question", template), **kwargs)
+            self.render(os.path.join(config.BASE_DIR, "sangao_admin", "templates", "Question", template), **kwargs)
 
         if question_type == 'single_choice':
 
@@ -148,8 +146,8 @@ class editHandler(tornado.web.RequestHandler):
                 self.write("题目不存在！")
                 return
 
-            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (Question.to_dict()["module_id"],))
-            sources = common.select("sangao", "SELECT * FROM question_source")
+            knowledges = Common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (Question.to_dict()["module_id"],))
+            sources = Common.select("sangao", "SELECT * FROM question_source")
             render_template("single_choice_edit.html", question=Question.to_dict(), modules=modules, knowledges=knowledges, sources=sources)
 
         elif question_type == 'true_false':
@@ -161,11 +159,11 @@ class editHandler(tornado.web.RequestHandler):
                 JOIN knowledge k ON k.id = tf.knowledge
                 WHERE tf.id = ?
             """
-            question = common.find("sangao", sql, (question_id,))
+            question = Common.find("sangao", sql, (question_id,))
             if not question:
                 self.write("题目不存在！")
                 return
-            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+            knowledges = Common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
             render_template("true_false_edit.html", question=question, modules=modules, knowledges=knowledges)
 
         elif question_type == 'operation':
@@ -174,7 +172,7 @@ class editHandler(tornado.web.RequestHandler):
             if not Question:
                 self.write("题目不存在！")
                 return
-            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (Question.module_id,))
+            knowledges = Common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (Question.module_id,))
 
 
             render_template(
@@ -197,11 +195,11 @@ class editHandler(tornado.web.RequestHandler):
                 JOIN knowledge k ON k.id = q.knowledge
                 WHERE q.id = ?
             """
-            question = common.find("sangao", sql, (question_id,))
+            question = Common.find("sangao", sql, (question_id,))
             if not question:
                 self.write("题目不存在！")
                 return
-            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+            knowledges = Common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
             render_template("multiple_choice_edit.html", question=question, modules=modules, knowledges=knowledges)
 
         elif question_type == 'fill_blank':
@@ -213,11 +211,11 @@ class editHandler(tornado.web.RequestHandler):
                 JOIN knowledge k ON k.id = q.knowledge
                 WHERE q.id = ?
             """
-            question = common.find("sangao", sql, (question_id,))
+            question = Common.find("sangao", sql, (question_id,))
             if not question:
                 self.write("题目不存在！")
                 return
-            knowledges = common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
+            knowledges = Common.select("sangao", "SELECT * FROM knowledge WHERE belong_module_id = ?", (question["module_id"],))
             render_template("fill_blank_edit.html", question=question, modules=modules, knowledges=knowledges)
 
     def post(self):
@@ -236,7 +234,7 @@ class editHandler(tornado.web.RequestHandler):
                 return filename
             return None
 
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR, "db", "sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR, "db", "sangao.db"))
         cursor = conn.cursor()
         try:
             if question_type == 'single_choice':
@@ -324,7 +322,7 @@ class editHandler(tornado.web.RequestHandler):
 
 class joinExamHandler(tornado.web.RequestHandler):
     def get(self):
-        # common.tongji("exam_paper_del")
+        # Common.tongji("exam_paper_del")
         data={}
         data["belong_exam_paper_id"]
         sql="insert into exam_plan(belong_exam_paper_id,question_type,question_id) values()"
@@ -333,9 +331,9 @@ class joinExamHandler(tornado.web.RequestHandler):
 class examPaperDelHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入warehouse_index_add_get")
-        common.tongji("exam_paper_del")
+        Common.tongji("exam_paper_del")
         sql = "delete from exam_paper where id=" + self.get_argument("id")
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         result = conn.cursor().execute(sql)
         conn.commit()
         print("result结果为:", result)
@@ -348,9 +346,9 @@ class examPaperDelHandler(tornado.web.RequestHandler):
 class handinHandler(tornado.web.RequestHandler):
     def get(self):
         print("进入交卷模块")
-        common.tongji("exam_paper_del")
+        Common.tongji("exam_paper_del")
         sql = "delete from exam_paper where id=" + self.get_argument("id")
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         result = conn.cursor().execute(sql)
         conn.commit()
         print("result结果为:", result)
@@ -360,7 +358,7 @@ class handinHandler(tornado.web.RequestHandler):
 
 class indexHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","index.html"))
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","index.html"))
     def post(self):
         pass
 
@@ -374,14 +372,14 @@ class sourceAddHandler(tornado.web.RequestHandler):
 
 
         sql="insert into question_source(public_year,publicer) values('"+data["public_time"]+"','"+data["source"]+"')"
-        result= common.execute("sangao",sql)
+        result= Common.execute("sangao",sql)
         if result:
             self.write('<html><head><title>提醒</title></head><body><script type="text/javascript">window.alert("添加成功！");</script></body></html>')
 
 
     def get(self):
         
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","source_add.html"))
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","source_add.html"))
 
 
 
@@ -414,8 +412,8 @@ class singleChoiceAddHandler(tornado.web.RequestHandler):
         
     def get(self):
         Knowledges=Knowledge.select()
-        modules=common.select("sangao","select * from module")
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","single_choice_add.html"),knowledges=Knowledges,modules=modules)
+        modules=Common.select("sangao","select * from module")
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","single_choice_add.html"),knowledges=Knowledges,modules=modules)
 
 
 class multipleChoiceAddHandler(tornado.web.RequestHandler):
@@ -443,21 +441,21 @@ class multipleChoiceAddHandler(tornado.web.RequestHandler):
         print(data["answer"])
         sql="insert into multiple_choice_question(title,choice1,choice2,choice3,choice4,choice5,choice6,picture,module,answer) values('"+data["title"]+"','"+data["choice1"]+"','"+data["choice2"]+"','"+data["choice3"]+"','"+data["choice4"]+"','"+data["choice5"]+"','"+data["choice6"]+"','"+data["photo1"]+"','"+data["module"]+"','"+data["answer"]+"')"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
     def get(self):
         Knowledges=Knowledge.select()
-        modules=common.select("sangao","select * from module")
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","multiple_choice_add.html"),knowledges=Knowledges,modules=modules)
+        modules=Common.select("sangao","select * from module")
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","multiple_choice_add.html"),knowledges=Knowledges,modules=modules)
 
 
 class selectHandler(tornado.web.RequestHandler):
     def get(self):
         konwledges=KnowledgeModel.select()
-        modules = common.select("sangao","select * from module")        
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","select.html"),knowledges=konwledges,modules=modules)
+        modules = Common.select("sangao","select * from module")        
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","select.html"),knowledges=konwledges,modules=modules)
 
     def post(self):
         post_data = self.request.arguments
@@ -483,14 +481,14 @@ class selectHandler(tornado.web.RequestHandler):
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"                  
             if data["module"]!="所有":
                 sql=sql+" and module='"+data["module"]+"'"                       
-            single_choice_questions=common.select("sangao",sql)
+            single_choice_questions=Common.select("sangao",sql)
         if self.get_argument("type")=="true_false":
             sql="select * from tf_question where difficult='"+data["difficult"]+"' and title like '%"+data["keyword"]+"%' "
             if data["knowledge"]!="所有":
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"  
             if data["module"]!="所有":
                 sql=sql+" and module='"+data["module"]+"'"                                   
-            true_false_questions=common.select("sangao",sql)
+            true_false_questions=Common.select("sangao",sql)
         if self.get_argument("type")=="operation":
             print("进入操作题")
             sql="select * from operation_question where difficult='"+data["difficult"]+"' and title like '%"+data["keyword"]+"%' "
@@ -498,7 +496,7 @@ class selectHandler(tornado.web.RequestHandler):
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"             
             if data["module"]!="所有":
                 sql=sql+" and module='"+data["module"]+"'"                                            
-            operation_questions=common.select("sangao",sql) 
+            operation_questions=Common.select("sangao",sql) 
             print(f"operation:{operation_questions}")
         if self.get_argument("type")=="multiple_choice":
             sql="select * from multiple_choice_question where difficult='"+data["difficult"]+"' and title like '%"+data["keyword"]+"%' "
@@ -506,7 +504,7 @@ class selectHandler(tornado.web.RequestHandler):
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"             
             if data["module"]!="所有":
                 sql=sql+" and module='"+data["module"]+"'"                 
-            multiple_choice_questions=common.select("sangao",sql)     
+            multiple_choice_questions=Common.select("sangao",sql)     
         if self.get_argument("type")=="fill_blank":
             print("进入填空题")
             sql="select * from fill_blank_question where difficult='"+data["difficult"]+"' and title like '%"+data["keyword"]+"%' "
@@ -514,14 +512,14 @@ class selectHandler(tornado.web.RequestHandler):
                 sql=sql+" and knowledge='"+data["knowledge"]+"'"             
             if data["module"]!="所有":
                 sql=sql+" and module='"+data["module"]+"'"                 
-            fill_blank_questions=common.select("sangao",sql)  
+            fill_blank_questions=Common.select("sangao",sql)  
         # print("结果集multiple_choice_questions",multiple_choice_questions)                                  
         # print("结果集single_choice_questions",single_choice_questions)       
         # print("结果集true_false_questions",true_false_questions)
         # print("结果集operation_questions",operation_questions)
         # print("结果集fill_blank_questions",fill_blank_questions)
         
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","result.html")
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","result.html")
         ,module=data["module"]
         ,question_type=self.get_argument("type")
         ,operation_questions=operation_questions
@@ -549,14 +547,14 @@ class fillBlankAddHandler(tornado.web.RequestHandler):
         print(data["answer"])
         sql="insert into fill_blank_question(title,picture,module,answer) values('"+data["title"]+"','"+data["photo1"]+"','"+data["module"]+"','"+data["answer"]+"')"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
     def get(self):
         sql="select * from exam_paper"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
@@ -573,19 +571,19 @@ class trueFalseAddHandler(tornado.web.RequestHandler):
         data["module"]=self.get_argument("module")
         sql="insert into tf_question(title,answer,picture,module) values('"+data["title"]+"','"+data["answer"]+"','"+data["picture"]+"','"+data["module"]+"')"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
     def get(self):
         sql="select * from exam_paper"
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
         exam_papers=cursor.fetchall()
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","true_false_add.html"),exam_papers=exam_papers)
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","true_false_add.html"),exam_papers=exam_papers)
 
 
 
@@ -691,7 +689,7 @@ class operationAddHandler(tornado.web.RequestHandler):
             score_rules_json
         )
 
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR, "db", "sangao.db"))
+        conn = sqlite3.connect(os.path.join(config.BASE_DIR, "db", "sangao.db"))
         cursor = conn.cursor()
         try:
             cursor.execute(sql, params)
@@ -704,7 +702,7 @@ class operationAddHandler(tornado.web.RequestHandler):
         finally:
             conn.close()
     def get(self):
-            modules=common.select("sangao","select * from module")
+            modules=Common.select("sangao","select * from module")
                             
-            self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Question","operation_add.html"),modules=modules)                  
+            self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","Question","operation_add.html"),modules=modules)                  
                        

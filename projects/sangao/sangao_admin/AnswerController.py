@@ -1,7 +1,6 @@
 # sangao_admin/AnswerController.py
 import tornado.web
 import sqlite3
-import myportal.common as common
 import logging
 import os
 from tornado.web import HTTPError
@@ -20,7 +19,7 @@ class errorQuestionHandler(tornado.web.RequestHandler):
     def post(self):
         sql="insert into examinee_answer(ctime,student_name,one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve,thirteen,fourteen,fifteen,sixteen,seventeen,eighteen,nineteen,twenty,twentyone,twentytwo,exam_paper_id,grade,class) values("+data["ctime"]+",'"+data["student_name"]+"','"+data["one"]+"','"+data["two"]+"','"+data["three"]+"','"+data["four"]+"','"+data["five"]+"','"+data["six"]+"','"+data["seven"]+"','"+data["eight"]+"','"+data["nine"]+"','"+data["ten"]+"','"+data["eleven"]+"','"+data["twelve"]+"','"+data["thirteen"]+"','"+data["fourteen"]+"','"+data["fifteen"]+"','"+data["sixteen"]+"','"+data["seventeen"]+"','"+data["eighteen"]+"','"+data["nineteen"]+"','"+data["twenty"]+"','"+data["twentyone"]+"','"+data["twentytwo"]+"',"+self.get_argument("exam_paper_id")+",'"+self.get_argument("grade")+"','"+self.get_argument("class")+"')";
         print(sql)
-        conn = sqlite3.connect(os.path.join(common.BASE_DIR,"db","sangao.db"))
+        conn = sqlite3.connect(os.path.join(Common.BASE_DIR,"db","sangao.db"))
         cursor = conn.cursor()
         cursor.execute(sql)
         conn.commit()
@@ -33,7 +32,7 @@ class errorQuestionHandler(tornado.web.RequestHandler):
         tf_error_stats = {}
         operation_error_stats = {}
         sql = "select * from student_answer"
-        student_answers=common.select("sangao",sql)
+        student_answers=Common.select("sangao",sql)
         for vo in student_answers:
             if vo["question_type"]=="single_choice":
                 #做过的加1
@@ -56,7 +55,7 @@ class errorQuestionHandler(tornado.web.RequestHandler):
                 tf_error_stats.setdefault(vo["question_id"],{"answer_sum":0,"error_sum":0,"question_type":"判断","question_title":""})
                 tf_error_stats[vo["question_id"]]["answer_sum"]+=1
                 sql = "select student_answer.question_id as question_id ,student_answer.question_type as question_type, student_answer.user_answer as student_answer,question.answer as question_answer,student_answer.student_id,question.title as question_title from student_answer join tf_question as question on question.id = student_answer.question_id where question.id= "+str(vo["question_id"]) 
-                student_answer = common.select("sangao",sql)
+                student_answer = Common.select("sangao",sql)
                 #将试题内容和类型保存在错题统计字典中
                 if not tf_error_stats[vo["question_id"]]["question_title"]:
                     tf_error_stats[vo["question_id"]]["question_title"]=student_answer[0]["question_title"]
@@ -88,7 +87,7 @@ class errorQuestionHandler(tornado.web.RequestHandler):
         #排序
         sorted_stats = sorted(merged_stats.items(),key= lambda x:(x[1]["answer_sum"],x[1]["error_sum"]/x[1]["answer_sum"]),reverse=True)
         # print("排序后的列表",sorted_stats)
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Answer","error_ranking_list.html"),
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","Answer","error_ranking_list.html"),
                     error_ranking= sorted_stats
                     )
 
@@ -99,4 +98,4 @@ class indexHandler(tornado.web.RequestHandler):
 
     #由于直接从数据库中取出错题信息（包括谁错的，哪道题，错误答案是啥，同错的有多少人，错误率多少（同错的人数除以做过的人数））比较复杂，可以分为两步来做。先将错题都取出来，再统计。由于处理麻烦，暂时不将操作题加入到错题中
     def get(self):
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Answer","index.html"))
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","Answer","index.html"))

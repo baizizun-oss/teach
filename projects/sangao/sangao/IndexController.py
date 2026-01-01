@@ -16,7 +16,7 @@ import http.client
 import json
 import sqlite3
 import re
-import common.CommonModel as Common
+from common.CommonModel import Common
 import config
 
 class indexHandler(tornado.web.RequestHandler):

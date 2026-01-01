@@ -26,7 +26,6 @@ import sangao.AnswerController
 import sangao_admin.TeachExamController
 import sangao_admin.AnswerController
 
-import myportal.common as common
 from tornado.web import StaticFileHandler
 import config
 

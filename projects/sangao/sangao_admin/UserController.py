@@ -15,8 +15,7 @@ import random
 import http.client
 import json
 import sqlite3
-import myportal.common as common
-
+import common.CommonModel as Common
 
 class listsHandler(tornado.web.RequestHandler):
     def get(self):
@@ -30,10 +29,10 @@ class listsHandler(tornado.web.RequestHandler):
             result = conn.cursor().execute(sql)
             conn.commit()
             conn.close()
-            common.tongji("design_lists")
+            Common.tongji("design_lists")
             # 统计模块结束
 
-            users = common.select("sangao","select * from user")
+            users = Common.select("sangao","select * from user")
 
             self.render("sangao_admin\\templates\\User\\lists.html",users=users)
 
@@ -47,7 +46,7 @@ class indexHandler(tornado.web.RequestHandler):
         conn.commit()
         conn.close()
         #统计模块结束
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","index.html"))
+        self.render(os.path.join(config.BASE_DIR,"sangao_admin","templates","index.html"))
     def on_response(self,response):
         body= json.loads(response.body)
         print("response内容为:",body)

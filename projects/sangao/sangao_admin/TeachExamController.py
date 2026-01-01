@@ -3,7 +3,6 @@ import os
 import time
 from pathlib import Path
 import tornado.web
-import myportal.common as common
 # from sangao_admin.AudioProcessService import AudioProcessService
 import logging
 import json
@@ -12,7 +11,7 @@ from jobs.llm_client import polish_transcript_sync
 import config
 from sangao_admin.RecordService import extract_teaching_chain
 import uuid
-
+from common.CommonModel import Common
 
 logger = logging.getLogger(__name__)
 
@@ -20,33 +19,33 @@ logger = logging.getLogger(__name__)
 class listsHandler(tornado.web.RequestHandler):
     def get(self):
 
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","lists.html")
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","lists.html")
         
                     )
 
 class questionListsHandler(tornado.web.RequestHandler):
     def get(self):
-        records = common.select("sangao", "SELECT * FROM teach_exam_question")
+        records = Common.select("sangao", "SELECT * FROM teach_exam_question")
         self.render(
-            os.path.join(common.BASE_DIR, "sangao_admin", "templates", "TeachExam", "question_lists.html"),
+            os.path.join(Common.BASE_DIR, "sangao_admin", "templates", "TeachExam", "question_lists.html"),
             records=records
         )
 
 class questionDetailHandler(tornado.web.RequestHandler):
     def get(self):
         sql="select * from teach_exam_question where id="+self.get_argument("id")
-        question = common.find("sangao",sql)
+        question = Common.find("sangao",sql)
         
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","question_detail.html"),
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","question_detail.html"),
                     question=question
                     )
 
 class teachDetailHandler(tornado.web.RequestHandler):
     def get(self):
         sql="select * from teach_exam_teach where id="+self.get_argument("id")
-        question = common.find("sangao",sql)
+        question = Common.find("sangao",sql)
         
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_detail.html"),
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_detail.html"),
                     teach=question,
                     board_design=json.dumps(question["board_design"]),
                     design=json.dumps(question["design"]),
@@ -55,16 +54,16 @@ class teachDetailHandler(tornado.web.RequestHandler):
 class teachListsHandler(tornado.web.RequestHandler):
     def get(self):
         sql="select * from teach_exam_teach"
-        teaches=common.select("sangao",sql)
+        teaches=Common.select("sangao",sql)
 
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_lists.html"),
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_lists.html"),
                     teaches=teaches
                     )
 
 
 class questionAddHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","question_add.html"))
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","question_add.html"))
         
     def post(self):
         data={}
@@ -72,16 +71,16 @@ class questionAddHandler(tornado.web.RequestHandler):
         data["my_answer"]=self.get_argument("my_answer")
         data["my_logic"]=self.get_argument("my_logic")
         sql="insert into teach_exam_question(question,my_answer,my_logic,ctime) values(?,?,?,?)"
-        result=common.execute("sangao",sql,(data["title"],data["my_answer"],data["my_logic"],int(time.time())))
+        result=Common.execute("sangao",sql,(data["title"],data["my_answer"],data["my_logic"],int(time.time())))
         if result:
             self.write("增加成功！")
 
 class questionEditHandler(tornado.web.RequestHandler):
     def get(self):
         sql="select * from teach_exam_question where id = "+self.get_argument("id")
-        question=common.find("sangao",sql)
+        question=Common.find("sangao",sql)
 
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","question_edit.html"),
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","question_edit.html"),
                     question=question
                     )
         
@@ -93,15 +92,15 @@ class questionEditHandler(tornado.web.RequestHandler):
         data["reflection"]=self.get_argument("reflection")
         data["score"]=self.get_argument("score")
         sql="update teach_exam_question set question='"+data["title"]+"',score="+data["score"]+",my_answer='"+data["my_answer"]+"',my_logic='"+data["my_logic"]+"',reflection='"+data["reflection"]+"' where id="+self.get_argument("id")
-        result=common.execute("sangao",sql)
+        result=Common.execute("sangao",sql)
         if result:
             self.write("增加成功！")
 
 class teachEditHandler(tornado.web.RequestHandler):
     def get(self):
         sql="select * from teach_exam_teach where id = "+self.get_argument("id")
-        teach=common.find("sangao",sql)
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_edit.html"),
+        teach=Common.find("sangao",sql)
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_edit.html"),
                     teach=teach
                     )
     def post(self):
@@ -122,7 +121,7 @@ class teachEditHandler(tornado.web.RequestHandler):
             data["board_pic"]=filename           
         else:
             sql="select * from teach_exam_teach where id="+self.get_argument("id")
-            teach=common.find("sangao",sql)
+            teach=Common.find("sangao",sql)
             data["board_pic"]=teach["board_pic"]     
         if self.request.files.get('design_pic', None):
             uploadFile = self.request.files['design_pic'][0]
@@ -133,10 +132,10 @@ class teachEditHandler(tornado.web.RequestHandler):
             data["design_pic"]=filename           
         else:
             sql="select * from teach_exam_teach where id="+self.get_argument("id")
-            teach=common.find("sangao",sql)
+            teach=Common.find("sangao",sql)
             data["design_pic"]=teach["design_pic"]                              
         sql="update teach_exam_teach set title='"+data["title"]+"',my_answer='"+data["my_answer"]+"',my_logic='"+data["my_logic"]+"',reflection='"+data["reflection"]+"',board_design='"+data["board_design"]+"',design='"+data["design"]+"',board_pic='"+data["board_pic"]+"',design_pic='"+data["design_pic"]+"' where id="+self.get_argument("id")
-        result=common.execute("sangao",sql)
+        result=Common.execute("sangao",sql)
         if result:
             self.write("增加成功！")
 
@@ -144,7 +143,7 @@ class teachEditHandler(tornado.web.RequestHandler):
 
 class teachAddHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_add.html"))
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","TeachExam","teach_add.html"))
         
     def post(self):
         data={}
@@ -165,6 +164,6 @@ class teachAddHandler(tornado.web.RequestHandler):
         
 
         sql="insert into teach_exam_teach(title,my_answer,my_logic,ctime,board_design,board_pic) values(?,?,?,?,?,?)"
-        result=common.execute("sangao",sql,(data["title"],data["my_answer"],data["my_logic"],int(time.time()),data["my_board"],data["board_pic"]))
+        result=Common.execute("sangao",sql,(data["title"],data["my_answer"],data["my_logic"],int(time.time()),data["my_board"],data["board_pic"]))
         if result:
             self.write("增加成功！")

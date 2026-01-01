@@ -3,13 +3,12 @@ import os
 import time
 from pathlib import Path
 import tornado.web
-import myportal.common as common
 # from sangao_admin.AudioProcessService import AudioProcessService
 import logging
 from jobs.asr_client import transcribe_audio_file_sync 
 from jobs.llm_client import polish_transcript_sync
 import sangao_admin.RecordService as RecordService
-
+import common.CommonModel as Common
 from sangao_admin.RecordService import extract_teaching_chain
 
 
@@ -17,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 class listsHandler(tornado.web.RequestHandler):
     def get(self):
-        records = common.select("sangao", "SELECT * FROM record")
+        records = Common.select("sangao", "SELECT * FROM record")
         self.render(
-            os.path.join(common.BASE_DIR, "sangao_admin", "templates", "Record", "lists.html"),
+            os.path.join(Common.BASE_DIR, "sangao_admin", "templates", "Record", "lists.html"),
             records=records
         )
 
@@ -30,7 +29,7 @@ class addHandler(tornado.web.RequestHandler):
         #            '<input type="file" name="audio" accept=".wav,.mp3,.m4a,.flac">'
         #            '<button type="submit">上传并转写</button>'
         #            '</form>')
-        self.render(os.path.join(common.BASE_DIR,"sangao_admin","templates","Record","add.html"))
+        self.render(os.path.join(Common.BASE_DIR,"sangao_admin","templates","Record","add.html"))
         
     def post(self):
         transcript = "[转写失败：未知错误]"
@@ -57,7 +56,7 @@ class addHandler(tornado.web.RequestHandler):
 
             timestamp = int(time.time())
             safe_name = f"rec_{timestamp}{ext}"
-            recordings_dir = Path(common.BASE_DIR) / "recordings"
+            recordings_dir = Path(Common.BASE_DIR) / "recordings"
             recordings_dir.mkdir(exist_ok=True)
             save_path = recordings_dir / safe_name
 
@@ -80,7 +79,7 @@ class addHandler(tornado.web.RequestHandler):
             ctime = int(time.time())
             sql = "INSERT INTO record (raw_content,processed_content, audio, ctime,title,logic_chain) VALUES (?, ?, ?,?,?,?)"
             try:
-                common.execute("sangao", sql, (transcript,processed_content, audio_path_str, ctime,title,logic_chain))
+                Common.execute("sangao", sql, (transcript,processed_content, audio_path_str, ctime,title,logic_chain))
             except Exception as e:
                 logger.error("❌ 数据库写入失败: %s", e)
 
@@ -105,7 +104,7 @@ class getLogicChainHandler(tornado.web.RequestHandler):
     def get(self):
         """显示文稿输入页面"""
         self.render(
-            os.path.join(common.BASE_DIR, "sangao_admin", "templates", "Record", "logic_chain.html"),
+            os.path.join(Common.BASE_DIR, "sangao_admin", "templates", "Record", "logic_chain.html"),
             result=None,
             manuscript=""
         )

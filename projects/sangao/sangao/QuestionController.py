@@ -8,7 +8,7 @@ import config
 warnings.filterwarnings('ignore')
 import time
 import json
-import common.CommonModel as Common
+from common.CommonModel import Common
 from .QuestionModel import (
     SingleChoiceQuestionModel,
     MultipleChoiceQuestionModel,
